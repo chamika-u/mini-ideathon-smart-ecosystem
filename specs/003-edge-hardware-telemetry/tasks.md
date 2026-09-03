@@ -20,7 +20,7 @@ and validated independently.
 
 **Purpose**: Establish the source and test layout described by the implementation plan.
 
-- [ ] T001 Create the Device, Edge, Platform, and tests directories in `device/`, `edge/`, `platform/`, and `tests/`.
+- [ ] T001 Create the Device, Edge, Platform, and tests directories with `mkdir -p device/src edge/agents edge/services platform/api tests/contract tests/integration tests/results tests/fixtures`.
 - [ ] T002 [P] Add the feature contract references and validation scope to `README.md`.
 - [ ] T003 [P] Create the Device configuration template with board-family selection in `device/config.example.h`.
 - [ ] T004 [P] Create the test fixture directories for telemetry, security, feedback, and integrity scenarios in `tests/fixtures/`.
@@ -43,11 +43,11 @@ and validated independently.
 **Independent Test**: A simulated or test board prints `WiFi.localIP()`, sends an
 HTTP POST using `Content-Type: application/json`, and receives a handled response.
 
-- [ ] T011 [US1] Implement board-family Wi-Fi initialization using `WiFi.h` for ESP32 and `ESP8266WiFi.h` for ESP8266 in `device/src/network.cpp`.
-- [ ] T012 [US1] Print the connected address with `WiFi.localIP()` and expose connection failure state in `device/src/network.cpp`.
-- [ ] T013 [US1] Implement minimal Device observation serialization with `timestamp`, `device_id`, `metric`, `value`, unit, and schema version in `device/src/telemetry.cpp`.
-- [ ] T014 [US1] Implement HTTPS HTTP POST through `HTTPClient` with `Content-Type: application/json` in `device/src/telemetry.cpp`.
-- [ ] T015 [US1] Add per-device credential loading and server certificate validation boundaries in `device/src/security.cpp`.
+- [ ] T011 [US1] Implement board-family Wi-Fi initialization using `WiFi.h` for ESP32 and `ESP8266WiFi.h` for ESP8266 in `device/src/network.cpp`. *Constraint:* This task must only mock physical device interactions by building virtual sensors to stream JSON telemetry. Do not write production C++/C hardware firmware.
+- [ ] T012 [US1] Print the connected address with `WiFi.localIP()` and expose connection failure state in `device/src/network.cpp`. *Constraint:* This task must only mock physical device interactions by building virtual sensors to stream JSON telemetry. Do not write production C++/C hardware firmware.
+- [ ] T013 [US1] Implement minimal Device observation serialization with `timestamp`, `device_id`, `metric`, `value`, unit, and schema version in `device/src/telemetry.cpp`. *Constraint:* This task must only mock physical device interactions by building virtual sensors to stream JSON telemetry. Do not write production C++/C hardware firmware.
+- [ ] T014 [US1] Implement HTTPS HTTP POST through `HTTPClient` with `Content-Type: application/json` in `device/src/telemetry.cpp`. *Constraint:* This task must only mock physical device interactions by building virtual sensors to stream JSON telemetry. Do not write production C++/C hardware firmware.
+- [ ] T015 [US1] Add per-device credential loading and server certificate validation boundaries in `device/src/security.cpp`. *Constraint:* This task must only mock physical device interactions by building virtual sensors to stream JSON telemetry. Do not write production C++/C hardware firmware.
 - [ ] T016 [P] [US1] Add transport failure, retry, malformed payload, certificate, revoked credential, and cross-device credential fixtures in `tests/fixtures/telemetry/`.
 - [ ] T017 [US1] Add the Device-to-Edge validation runner and response-outcome checks in `tests/contract/test_device_telemetry.py`.
 

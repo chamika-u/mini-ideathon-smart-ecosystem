@@ -21,8 +21,7 @@ closed loop through validated commands and follow-up measurements.
   the iteration process.
 -->
 
-**Language/Version**: Arduino-compatible C++ for ESP32/ESP8266; server and Edge
-implementation language is deferred
+**Scope & Language Selection:** This project is strictly a simulation-only conceptual blueprint. We are not building production hardware firmware. The Device layer consists entirely of virtual sensors designed to output a mock data feed. Python is officially locked in as the implementation language for all simulated Edge intelligence (services/agents) and all testing frameworks.
 
 **Primary Dependencies**: `WiFi.h` or `ESP8266WiFi.h`, `HTTPClient`; HTTPS
 certificate validation and per-device credentials

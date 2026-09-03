@@ -10,6 +10,18 @@
 Application architectural blueprint for AE-SSS with edge inference, a closed-loop
 actuator path, telemetry contracts, HITL escalation, and silent-failure detection.
 
+## Clarifications
+
+### Session 2026-09-04
+
+- Q: Should the final architecture specification live only in the existing feature
+  file, be duplicated as a root-level `spec.md`, or use the feature file as the
+  canonical source with a root-level summary? -> A: Use the feature specification
+  as canonical and create a root-level summary during planning or implementation.
+- Q: If the Network or Platform is unavailable during a Level 3 event, what should
+  happen after the 30-second local countdown expires? -> A: Edge performs a
+  pre-authorized, bounded local actuator action after 30 seconds.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Resolve a Critical Threat (Priority: P1)
@@ -81,8 +93,8 @@ remain nominal, then verify a degraded-health signal and hardware integrity aler
 - If duplicate, delayed, malformed, or out-of-order observations arrive, Edge
   validates them and prevents duplicate actuation.
 - If the HITL countdown expires while Platform or Network is unavailable, the
-  specified safe local fallback and its audit event are used; no unauthenticated
-  command is executed.
+  Edge executes only a pre-authorized, bounded local actuator fallback and records
+  its audit event; no unauthenticated or unapproved command is executed.
 - If sensor values drift gradually while changing, physical plausibility,
   calibration, peer, and environmental checks still raise degraded health.
 - If an actuator does not confirm state change, the system records an actuation
@@ -124,6 +136,24 @@ remain nominal, then verify a degraded-health signal and hardware integrity aler
   and learning approval MUST have auditable provenance and least-privilege access.
 - **FR-015**: The specification MUST identify retained, aggregated, pruned, and
   forwarded data at each boundary and define behavior for invalid observations.
+- **FR-016**: The blueprint MUST name the canonical physical-to-digital pipeline
+  steps as Sense, Communicate, Decide, and Act, and MUST show that Act changes a
+  physical quantity whose effect is measured by a later Sense step.
+- **FR-017**: The Agentic AI OS MUST continuously represent monitor -> reason ->
+  validate -> act -> learn across the canonical pipeline, with the Monitor Agent
+  ingesting signals, SDG data, constraints, thresholds, and patterns; the Planner
+  Agent producing a plan; the Decision / Validator Agent enforcing least privilege,
+  approved commands, human stop or override, and action logging; and the Action
+  Agent producing a physical effect.
+- **FR-018**: The final presentation specification MUST define an 8-minute pitch
+  covering the SDG problem, GitHub Spec, Agentic AI OS design, IoT simulation
+  architecture, and evidence that makes the technical story trustworthy.
+- **FR-019**: Repository hand-off requirements MUST identify `CLAUDE.md` for system
+  scope and agent roles, the canonical feature `spec.md` for inputs, outputs, and
+  constraints, and `README.md` for how to run and understand the blueprint.
+- **FR-020**: If Network or Platform is unavailable when the Level 3 countdown
+  expires, Edge MUST execute only a pre-authorized, bounded local actuator action,
+  enforce its safety checks and expiry, and record the outcome for later sync.
 
 ### Key Entities *(include if data involved)*
 
@@ -154,13 +184,18 @@ remain nominal, then verify a degraded-health signal and hardware integrity aler
   produce a degraded-health or hardware-integrity signal before consequential act.
 - **SC-006**: Another engineering team can trace 100% of functional requirements
   to a tier, telemetry field, acceptance scenario, and measurable outcome.
+- **SC-007**: The architecture walkthrough demonstrates all four canonical steps,
+  a measured action effect, and a complete monitor -> reason -> validate -> act ->
+  learn cycle without an open-loop notification-only path.
+- **SC-008**: A timed presentation rehearsal completes the required story in 8
+  minutes and covers all five specified pitch topics with no omitted section.
 
 ## Assumptions
 
 - The blueprint uses simulated sensor streams and mock external alert calls; it does
   not authorize real surveillance, emergency dispatch, or public-address deployment.
 - Mains-powered servers provide durable coordination, while Edge retains enough
-  state for Level 1 autonomy and the documented Level 3 fallback.
+  state for Level 1 autonomy and the pre-authorized, bounded Level 3 fallback.
 - Authorized operators and actuator capabilities are defined by the future build
   team; absent authorization, the system fails closed for consequential actions.
 - The exact reduction baseline, sensor sampling rates, physical units, and retention

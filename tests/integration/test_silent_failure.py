@@ -20,6 +20,14 @@ class SilentFailureTests(unittest.TestCase):
         self.assertEqual(item.authorization_state, "read_only")
         self.assertIn("diagnostics.json", item.dashboard_destination)
         self.assertEqual([entry["role"] for entry in coordinator.audit], ["Researcher", "Engineer", "Tester", "Designer"])
+        self.assertEqual(coordinator.alerts[0]["event"], "hardware_integrity_alert")
+        self.assertEqual(coordinator.alerts[0]["work_item_id"], item.work_item_id)
+
+    def test_control_changing_diagnostic_stays_blocked(self):
+        item = DiagnosticCoordinator().create_work_item("air-node-01", "drift", "calibration drift")
+        coordinator = DiagnosticCoordinator()
+        item = coordinator.authorize_control_change(item, approved=False)
+        self.assertEqual(item.authorization_state, "blocked_pending_validator")
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from .config import VirtualSensorConfig
 from .network import MockEdgeServer, TransportResult, VirtualHTTPClient, VirtualWiFi
 from .security import CredentialStore, ServerCertificateValidator
+from edge.services.reliability import ReliableBuffer
 
 
 REQUIRED_FIELDS = ("timestamp", "device_id", "metric", "value")
@@ -30,6 +31,7 @@ class VirtualSensor:
         self.certificates = certificate_validator
         self.wifi = VirtualWiFi(config)
         self.http = VirtualHTTPClient()
+        self.buffer = ReliableBuffer(capacity=100)
 
     def connect(self) -> str:
         if not self.wifi.connect(self.config.credential):
@@ -44,4 +46,21 @@ class VirtualSensor:
         if not self.certificates.validate("demo-server-fingerprint"):
             return TransportResult(495, False, "server certificate rejected")
         payload = serialize_observation(self.config.device_id, metric, value, unit)
-        return self.http.post(payload, {"Content-Type": "application/json"}, self.server)
+        result = self._post_with_retry(payload, attempts=2)
+        if not result.accepted and result.status_code in (408, 429, 500, 502, 503, 504):
+            self.buffer.add(payload)
+        return result
+
+    def _post_with_retry(self, payload: str, attempts: int) -> TransportResult:
+        result = TransportResult(503, False, "not attempted")
+        for _ in range(attempts):
+            result = self.http.post(payload, {"Content-Type": "application/json"}, self.server)
+            if result.accepted or result.status_code not in (408, 429, 500, 502, 503, 504):
+                return result
+        return result
+
+    def replay_buffer(self) -> list[TransportResult]:
+        results = []
+        for payload in self.buffer.drain():
+            results.append(self._post_with_retry(payload, attempts=2))
+        return results

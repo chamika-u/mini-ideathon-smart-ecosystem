@@ -37,11 +37,12 @@ class VirtualHTTPClient:
 
 
 class MockEdgeServer:
-    def __init__(self, expected_device_id: str, credential_store, certificate_validator):
+    def __init__(self, expected_device_id: str, credential_store, certificate_validator, transient_failures: int = 0):
         self.expected_device_id = expected_device_id
         self.credential_store = credential_store
         self.certificate_validator = certificate_validator
         self.received: list[dict] = []
+        self.transient_failures = transient_failures
         from edge.services.telemetry_ingress import TelemetryIngress
 
         self.ingress = TelemetryIngress()
@@ -49,6 +50,9 @@ class MockEdgeServer:
     def receive(self, payload: str) -> TransportResult:
         import json
 
+        if self.transient_failures:
+            self.transient_failures -= 1
+            return TransportResult(503, False, "temporary Edge outage")
         try:
             observation = json.loads(payload)
         except json.JSONDecodeError:

@@ -4,6 +4,7 @@ from edge.models import DiagnosticWorkItem
 class DiagnosticCoordinator:
     def __init__(self):
         self.audit: list[dict] = []
+        self.alerts: list[dict] = []
 
     def create_work_item(self, device_id: str, failure_signal: str, hypothesis: str) -> DiagnosticWorkItem:
         return DiagnosticWorkItem(
@@ -34,4 +35,16 @@ class DiagnosticCoordinator:
             {"role": "Tester", "work_item_id": item.work_item_id, "result": item.test_result},
             {"role": "Designer", "work_item_id": item.work_item_id, "destination": item.dashboard_destination},
         ])
+        self.emit_alert(item)
         return item
+
+    def emit_alert(self, item: DiagnosticWorkItem) -> dict:
+        alert = {
+            "event": "hardware_integrity_alert",
+            "device_id": item.work_item_id.removeprefix("diagnostic-"),
+            "health_state": "degraded",
+            "reason": item.failure_signal,
+            "work_item_id": item.work_item_id,
+        }
+        self.alerts.append(alert)
+        return alert

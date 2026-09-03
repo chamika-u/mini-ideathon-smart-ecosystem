@@ -41,6 +41,20 @@ class AgenticLoopTests(unittest.TestCase):
             self.assertEqual(follow_up.feature_summary["latest"], "reduced")
         self.assertGreaterEqual(sum(duration < 1.0 for duration in durations), 95)
 
+    def test_action_rejects_invalid_commands(self):
+        validator = ValidatorAgent(CommandPolicy({"microgrid-safe-v1"}))
+        action = ActionAgent(validator)
+        base = {"command_id": "negative-1", "target": "load_group_a", "command_set_id": "microgrid-safe-v1", "scope": "reduce_load_group_a", "expires_at": (datetime.now(timezone.utc) + timedelta(seconds=5)).isoformat(), "stop_condition": "voltage_outside_safe_range", "authorization": {"policy_result": "approved"}, "audit_reference": "assessment-negative"}
+        self.assertRaises(PermissionError, ActionAgent().execute, base)
+        expired = dict(base, command_id="negative-2", expires_at=(datetime.now(timezone.utc) - timedelta(seconds=1)).isoformat())
+        self.assertRaises(PermissionError, action.execute, expired)
+        missing_stop = dict(base, command_id="negative-3", stop_condition="")
+        self.assertRaises(PermissionError, action.execute, missing_stop)
+        unsupported = dict(base, command_id="negative-4", scope="open_breaker")
+        self.assertRaises(ValueError, action.execute, unsupported)
+        action.execute(base)
+        self.assertRaises(ValueError, action.execute, base)
+
 
 if __name__ == "__main__":
     unittest.main()

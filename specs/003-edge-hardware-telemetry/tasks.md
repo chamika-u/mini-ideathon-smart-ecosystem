@@ -22,7 +22,7 @@ and validated independently.
 
 - [ ] T001 Create the Device, Edge, Platform, and tests directories with `mkdir -p device/src edge/agents edge/services platform/api tests/contract tests/integration tests/results tests/fixtures`.
 - [ ] T002 [P] Add the feature contract references and validation scope to `README.md`.
-- [ ] T003 [P] Create the Python virtual-sensor configuration template in `device/config.example.py`.
+- [ ] T003 [P] Create the Python virtual-sensor configuration template in `device/src/config.py`.
 - [ ] T004 [P] Create the test fixture directories for telemetry, security, feedback, and integrity scenarios in `tests/fixtures/`.
 
 ## Phase 2: Foundational (Blocking Prerequisites)
@@ -98,7 +98,7 @@ US1: T011-T015 -> T017
 US2: T018-T023 -> T024
 US3: T025-T029 -> T031
 US1 and US2 -> US3 validation
-US1, US2, US3 -> T032-T035
+US1, US2, US3 -> T032-T036
 ```
 
 User Story 1 and User Story 2 can proceed in parallel after foundational contracts.

@@ -16,6 +16,9 @@ telemetry, Agentic AI OS feedback loop, and proactive integrity workflow.
 - Q: What authentication approach should the field node use when sending HTTP
   telemetry to the server? -> A: Per-device credentials over HTTPS with server
   certificate validation.
+- Q: Should the simulation preserve the ESP32/ESP8266 API names as mocked
+  interfaces or use pure Python virtual-sensor modules? -> A: Preserve the Arduino
+  API names as mocked interfaces inside Python virtual-sensor modules.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -103,11 +106,11 @@ uptime and packet delivery, then verify integrity alerting and bounded diagnosti
   Application boundaries, with Device limited to transduction and minimal transport.
 - **FR-002**: Edge MUST perform feature extraction, inference, validation, and data
   pruning before observations are forwarded to mains-powered services.
-- **FR-003**: An ESP32 node MUST establish Wi-Fi connectivity using `WiFi.h` and an
-  ESP8266 node MUST use `ESP8266WiFi.h`, selected according to the board family.
-- **FR-004**: After successful connection, the field node MUST print its address
-  using `WiFi.localIP()` for operator-visible diagnosis.
-- **FR-005**: The field node MUST transmit observations with HTTP POST through an
+- **FR-003**: The Python virtual-sensor simulation MUST preserve mocked
+  board-family interfaces named `WiFi.h` for ESP32 and `ESP8266WiFi.h` for ESP8266.
+- **FR-004**: After simulated connection, the virtual sensor MUST expose and print
+  the mocked `WiFi.localIP()` value for operator-visible diagnosis.
+- **FR-005**: The virtual sensor simulation MUST model HTTP POST through a mocked
   `HTTPClient` and MUST set `Content-Type: application/json`.
 - **FR-006**: The JSON observation MUST contain `timestamp`, `device_id`, `metric`,
   and `value`; invalid or missing fields MUST be rejected at the Edge boundary.
@@ -169,8 +172,9 @@ uptime and packet delivery, then verify integrity alerting and bounded diagnosti
 
 ## Assumptions
 
-- ESP32 and ESP8266 are representative hardware families; exact board, pin mapping,
-  credentials, and server endpoint are implementation decisions for planning.
+- ESP32 and ESP8266 are representative hardware families; their API names are
+  mocked by Python virtual-sensor modules. No board firmware, pin mapping, or
+  physical hardware integration is required for this feature.
 - Network transport uses per-device credentials over HTTPS with server certificate
   validation in the eventual build; this conceptual feature does not authorize
   production surveillance or real emergency integrations.

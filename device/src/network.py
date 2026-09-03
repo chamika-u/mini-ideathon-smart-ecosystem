@@ -42,6 +42,9 @@ class MockEdgeServer:
         self.credential_store = credential_store
         self.certificate_validator = certificate_validator
         self.received: list[dict] = []
+        from edge.services.telemetry_ingress import TelemetryIngress
+
+        self.ingress = TelemetryIngress()
 
     def receive(self, payload: str) -> TransportResult:
         import json
@@ -52,5 +55,9 @@ class MockEdgeServer:
             return TransportResult(400, False, "malformed JSON")
         if observation.get("device_id") != self.expected_device_id:
             return TransportResult(403, False, "device identity rejected")
+        try:
+            self.ingress.accept(payload)
+        except (ValueError, TypeError) as error:
+            return TransportResult(400, False, str(error))
         self.received.append(observation)
         return TransportResult(202, True, "accepted for Edge processing")

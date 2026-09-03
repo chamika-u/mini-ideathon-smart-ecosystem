@@ -15,6 +15,10 @@ class TelemetryIngress:
         missing = [field for field in self.required if field not in data]
         if missing:
             raise ValueError(f"missing required fields: {', '.join(missing)}")
+        if not all(isinstance(data[field], str) and data[field] for field in ("timestamp", "device_id", "metric")):
+            raise ValueError("timestamp, device_id, and metric must be non-empty strings")
+        if not isinstance(data["value"], (int, float, str, bool)):
+            raise ValueError("value has an unsupported type")
         key = (data["device_id"], data["timestamp"])
         if key in self.seen:
             raise ValueError("duplicate observation")

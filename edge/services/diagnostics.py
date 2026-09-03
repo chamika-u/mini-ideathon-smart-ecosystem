@@ -2,6 +2,9 @@ from edge.models import DiagnosticWorkItem
 
 
 class DiagnosticCoordinator:
+    def __init__(self):
+        self.audit: list[dict] = []
+
     def create_work_item(self, device_id: str, failure_signal: str, hypothesis: str) -> DiagnosticWorkItem:
         return DiagnosticWorkItem(
             work_item_id=f"diagnostic-{device_id}",
@@ -19,4 +22,16 @@ class DiagnosticCoordinator:
 
     def authorize_control_change(self, item: DiagnosticWorkItem, approved: bool) -> DiagnosticWorkItem:
         item.authorization_state = "validator_approved" if approved else "blocked_pending_validator"
+        return item
+
+    def orchestrate(self, item: DiagnosticWorkItem, values: list[float], expected_range: tuple[float, float]) -> DiagnosticWorkItem:
+        self.audit.extend([
+            {"role": "Researcher", "work_item_id": item.work_item_id},
+            {"role": "Engineer", "work_item_id": item.work_item_id},
+        ])
+        self.run_read_only(item, values, expected_range)
+        self.audit.extend([
+            {"role": "Tester", "work_item_id": item.work_item_id, "result": item.test_result},
+            {"role": "Designer", "work_item_id": item.work_item_id, "destination": item.dashboard_destination},
+        ])
         return item

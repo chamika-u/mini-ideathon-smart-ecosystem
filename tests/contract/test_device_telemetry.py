@@ -25,6 +25,24 @@ class DeviceTelemetryContractTests(unittest.TestCase):
         sensor = VirtualSensor(config, server, credentials, ServerCertificateValidator("demo-server-fingerprint"))
         self.assertFalse(sensor.send("voltage", 1).accepted)
 
+    def test_ingress_rejects_malformed_and_duplicate_observations(self):
+        config = VirtualSensorConfig("energy-node-01")
+        credentials = CredentialStore([DeviceCredential(config.device_id, config.credential)])
+        server = MockEdgeServer(config.device_id, credentials, ServerCertificateValidator("demo-server-fingerprint"))
+        payload = '{"timestamp":"2026-09-04T12:00:00Z","device_id":"energy-node-01","metric":"voltage","value":230}'
+        self.assertTrue(server.receive(payload).accepted)
+        self.assertFalse(server.receive(payload).accepted)
+        self.assertEqual(server.receive('{"device_id":"energy-node-01"}').status_code, 400)
+
+    def test_revoked_and_cross_device_credentials_are_rejected(self):
+        config = VirtualSensorConfig("energy-node-01")
+        credentials = CredentialStore([DeviceCredential(config.device_id, config.credential, revoked=True)])
+        server = MockEdgeServer(config.device_id, credentials, ServerCertificateValidator("demo-server-fingerprint"))
+        sensor = VirtualSensor(config, server, credentials, ServerCertificateValidator("demo-server-fingerprint"))
+        self.assertEqual(sensor.send("voltage", 230).status_code, 401)
+        other = VirtualSensor(VirtualSensorConfig("energy-node-02", credential=config.credential), server, credentials, ServerCertificateValidator("demo-server-fingerprint"))
+        self.assertEqual(other.send("voltage", 230).status_code, 401)
+
 
 if __name__ == "__main__":
     unittest.main()

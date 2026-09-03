@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "required": ["command_id", "target", "command_set_id", "scope", "expires_at", "stop_condition", "authorization", "audit_reference"],
+  "properties": {
+    "command_id": {"type": "string"},
+    "target": {"type": "string"},
+    "command_set_id": {"type": "string"},
+    "scope": {"type": "string"},
+    "expires_at": {"type": "string"},
+    "stop_condition": {"type": "string"},
+    "authorization": {"type": "object"},
+    "audit_reference": {"type": "string"}
+  }
+}

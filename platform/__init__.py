@@ -1,0 +1,1 @@
+"""Conceptual platform contracts."""

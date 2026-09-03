@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "required": ["timestamp", "device_id", "metric", "value"],
+  "properties": {
+    "timestamp": {"type": "string"},
+    "device_id": {"type": "string", "minLength": 1},
+    "metric": {"type": "string", "minLength": 1},
+    "value": {"type": ["number", "string", "boolean"]},
+    "unit": {"type": "string"},
+    "schema_version": {"type": "string"},
+    "source_health": {"type": "object"}
+  },
+  "additionalProperties": false
+}

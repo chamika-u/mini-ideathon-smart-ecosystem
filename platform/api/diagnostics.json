@@ -1,0 +1,5 @@
+{
+  "event": "hardware_integrity_alert",
+  "required": ["device_id", "health_state", "reason", "work_item_id"],
+  "authorization": "read-only diagnostic or Validator-approved change"
+}

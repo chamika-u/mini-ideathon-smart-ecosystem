@@ -1,0 +1,1 @@
+"""Shared Edge service interfaces."""

@@ -3,9 +3,7 @@
 **Branch**: `003-edge-hardware-telemetry` | **Date**: 2026-09-04 | **Spec**:
 [spec.md](spec.md)
 
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
-
-**Note**: This template is filled in by the `/speckit-plan` command; its definition describes the execution workflow.
+**Input**: Feature specification from `/specs/003-edge-hardware-telemetry/spec.md`
 
 ## Summary
 
@@ -72,7 +70,7 @@ The following gates pass before research:
 ### Documentation (this feature)
 
 ```text
-specs/[###-feature]/
+specs/003-edge-hardware-telemetry/
 ├── plan.md              # This file (/speckit-plan command output)
 ├── research.md          # Phase 0 output (/speckit-plan command)
 ├── data-model.md        # Phase 1 output (/speckit-plan command)

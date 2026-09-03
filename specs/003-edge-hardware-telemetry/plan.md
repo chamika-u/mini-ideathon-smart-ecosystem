@@ -91,7 +91,7 @@ device/
 └── src/
     ├── network.py
     ├── telemetry.py
-    └── security.py
+    ├── security.py
     └── config.py
 edge/
 ├── agents/

@@ -28,8 +28,7 @@ An engineer needs an ESP32 or ESP8266 field node to connect to the network,
 identify its assigned IP address, and deliver JSON sensor observations to the
 server for edge processing.
 
-Note: Any references to physical hardware like ESP32 or ESP8266 are compatibility
-examples only; this project represents them entirely via Python mock virtual sensors.
+Note: Any references to physical hardware like ESP32 or ESP8266 are compatibility examples only; this project represents them entirely via Python mock virtual sensors.
 
 **Why this priority**: Reliable sensing-to-edge transport is the entry point for
 the closed-loop system.

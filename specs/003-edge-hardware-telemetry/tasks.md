@@ -148,3 +148,11 @@ Sequential: T026 after T025; T028 after T027; T029 after T028; T031 after T025-T
 - [X] T042 Add closed-loop latency and follow-up measurement coverage that verifies at least 95% of representative validated local Edge-to-Act scenarios complete under 1 second and feed the next decision in `tests/integration/test_agentic_loop.py` per SC-003 and SC-005 (missing).
 - [X] T043 Add explicit Device offline buffering and recovery integration coverage using `edge/services/reliability.py` and `tests/integration/test_device_recovery.py` per the RAID availability and reliability constraints in Constitution IV (missing).
 - [X] T044 Reconcile the duplicate diagnostic alert artifacts at `platform/api/diagnostics.json` and `platform/alerts/diagnostics.json`, documenting one canonical contract and removing or justifying the other during implementation per FR-012 and plan source-tree ownership (unrequested/partial).
+
+## Phase 8: Convergence
+
+- [ ] T045 Implement transport failure classification and bounded retry/recovery in `device/src/telemetry.py` and `device/src/network.py`, exercising HTTP errors, timeouts, invalid credentials, and certificate failures from `tests/fixtures/telemetry/` per FR-014, FR-016, and SC-007 (partial).
+- [ ] T046 Extend `tests/integration/test_device_recovery.py` to replay buffered virtual-sensor payloads through the Edge ingress after connectivity recovery and verify accepted observations and bounded-buffer audit evidence per Constitution IV (partial).
+- [ ] T047 Implement dashboard alert emission from `edge/services/diagnostics.py` using the canonical `platform/alerts/diagnostics.json` contract, including device identity, degraded health, failure reason, and work-item reference per FR-012 and US3/AC1 (partial).
+- [ ] T048 Extend `tests/integration/test_silent_failure.py` to prove the complete ordering of degraded-health detection, four-role diagnostic orchestration, Validator blocking of control-changing diagnostics, and dashboard alert emission before unsafe actuation per FR-008, FR-012, FR-013, and SC-004 (partial).
+- [ ] T049 Add explicit negative Action boundary tests for expired, missing-stop-condition, unauthorized, duplicate, and unsupported-scope commands in `tests/integration/test_agentic_loop.py` per FR-010, FR-011, and `contracts/actuation-command.md` (partial).

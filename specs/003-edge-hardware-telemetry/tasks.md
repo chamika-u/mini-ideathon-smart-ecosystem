@@ -137,3 +137,14 @@ Sequential: T026 after T025; T028 after T027; T029 after T028; T031 after T025-T
 3. Add User Story 3 for proactive integrity and bounded autonomous diagnostics.
 4. Finish with contract compatibility, traceability, quickstart evidence, and the
    under-one-second local latency measurement.
+
+## Phase 7: Convergence
+
+- [ ] T037 Integrate `edge/services/telemetry_ingress.py` with the Device-to-Edge receipt path so required fields, types, schema version, duplicates, ordering, and malformed JSON are enforced before acceptance per FR-006 and FR-013 (partial).
+- [ ] T038 Add complete transport-security and failure fixtures for missing, revoked, and cross-device credentials, invalid server certificates, HTTP errors, timeouts, retries, and bounded buffering under `tests/fixtures/telemetry/` per FR-014, FR-016, and SC-007 (missing).
+- [ ] T039 Enforce validated-command authorization at the Action boundary in `edge/agents/action.py`, including approved command set, expiry, stop condition, duplicate command ID, and audit rejection behavior per FR-010, FR-011, and `contracts/actuation-command.md` (partial).
+- [ ] T040 Implement autonomous Researcher, Engineer, Tester, and Designer diagnostic orchestration in `edge/services/diagnostics.py`, including bounded read-only execution, result hand-off, and dashboard alert emission per FR-012 and US3/AC1 (partial).
+- [ ] T041 Add integration coverage for the full silent-failure path, including nominal packet/current telemetry, degraded health, diagnostic orchestration, Validator blocking, and dashboard alert ordering in `tests/integration/test_silent_failure.py` per FR-008, FR-012, FR-013, and SC-004 (partial).
+- [ ] T042 Add closed-loop latency and follow-up measurement coverage that verifies at least 95% of representative validated local Edge-to-Act scenarios complete under 1 second and feed the next decision in `tests/integration/test_agentic_loop.py` per SC-003 and SC-005 (missing).
+- [ ] T043 Add explicit Device offline buffering and recovery integration coverage using `edge/services/reliability.py` and `tests/integration/test_device_recovery.py` per the RAID availability and reliability constraints in Constitution IV (missing).
+- [ ] T044 Reconcile the duplicate diagnostic alert artifacts at `platform/api/diagnostics.json` and `platform/alerts/diagnostics.json`, documenting one canonical contract and removing or justifying the other during implementation per FR-012 and plan source-tree ownership (unrequested/partial).

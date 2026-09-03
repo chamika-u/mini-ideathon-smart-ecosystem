@@ -38,10 +38,10 @@ and validated independently.
 
 ## Phase 3: User Story 1 - Connect a Field Node (Priority: P1)
 
-**Goal**: Connect an ESP32/ESP8266 Device and deliver authenticated JSON telemetry to Edge.
+**Goal**: Connect a simulated Device and deliver authenticated JSON telemetry to Edge.
 
-**Independent Test**: A simulated or test board prints `WiFi.localIP()`, sends an
-HTTP POST using `Content-Type: application/json`, and receives a handled response.
+**Independent Test**: A Python virtual sensor exposes a simulated local address,
+sends an HTTP POST using `Content-Type: application/json`, and receives a handled response.
 
 - [ ] T011 [US1] Implement Python virtual-sensor network connection simulation and failure states in `device/src/network.py`. *Constraint:* This task must only build Python virtual sensors that stream JSON telemetry. Do not write production hardware firmware.
 - [ ] T012 [US1] Expose the simulated network address and connection diagnostics in `device/src/network.py`. *Constraint:* This task must only build Python virtual sensors that stream JSON telemetry. Do not write production hardware firmware.

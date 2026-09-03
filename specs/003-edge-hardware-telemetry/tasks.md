@@ -22,7 +22,7 @@ and validated independently.
 
 - [ ] T001 Create the Device, Edge, Platform, and tests directories with `mkdir -p device/src edge/agents edge/services platform/api tests/contract tests/integration tests/results tests/fixtures`.
 - [ ] T002 [P] Add the feature contract references and validation scope to `README.md`.
-- [ ] T003 [P] Create the Device configuration template with board-family selection in `device/config.example.h`.
+- [ ] T003 [P] Create the Python virtual-sensor configuration template in `device/config.example.py`.
 - [ ] T004 [P] Create the test fixture directories for telemetry, security, feedback, and integrity scenarios in `tests/fixtures/`.
 
 ## Phase 2: Foundational (Blocking Prerequisites)
@@ -43,11 +43,11 @@ and validated independently.
 **Independent Test**: A simulated or test board prints `WiFi.localIP()`, sends an
 HTTP POST using `Content-Type: application/json`, and receives a handled response.
 
-- [ ] T011 [US1] Implement board-family Wi-Fi initialization using `WiFi.h` for ESP32 and `ESP8266WiFi.h` for ESP8266 in `device/src/network.cpp`. *Constraint:* This task must only mock physical device interactions by building virtual sensors to stream JSON telemetry. Do not write production C++/C hardware firmware.
-- [ ] T012 [US1] Print the connected address with `WiFi.localIP()` and expose connection failure state in `device/src/network.cpp`. *Constraint:* This task must only mock physical device interactions by building virtual sensors to stream JSON telemetry. Do not write production C++/C hardware firmware.
-- [ ] T013 [US1] Implement minimal Device observation serialization with `timestamp`, `device_id`, `metric`, `value`, unit, and schema version in `device/src/telemetry.cpp`. *Constraint:* This task must only mock physical device interactions by building virtual sensors to stream JSON telemetry. Do not write production C++/C hardware firmware.
-- [ ] T014 [US1] Implement HTTPS HTTP POST through `HTTPClient` with `Content-Type: application/json` in `device/src/telemetry.cpp`. *Constraint:* This task must only mock physical device interactions by building virtual sensors to stream JSON telemetry. Do not write production C++/C hardware firmware.
-- [ ] T015 [US1] Add per-device credential loading and server certificate validation boundaries in `device/src/security.cpp`. *Constraint:* This task must only mock physical device interactions by building virtual sensors to stream JSON telemetry. Do not write production C++/C hardware firmware.
+- [ ] T011 [US1] Implement Python virtual-sensor network connection simulation and failure states in `device/src/network.py`. *Constraint:* This task must only build Python virtual sensors that stream JSON telemetry. Do not write production hardware firmware.
+- [ ] T012 [US1] Expose the simulated network address and connection diagnostics in `device/src/network.py`. *Constraint:* This task must only build Python virtual sensors that stream JSON telemetry. Do not write production hardware firmware.
+- [ ] T013 [US1] Implement Python virtual-sensor observation serialization with `timestamp`, `device_id`, `metric`, `value`, unit, and schema version in `device/src/telemetry.py`. *Constraint:* This task must only build Python virtual sensors that stream JSON telemetry. Do not write production hardware firmware.
+- [ ] T014 [US1] Implement simulated HTTPS JSON POST transport with `Content-Type: application/json` in `device/src/telemetry.py`. *Constraint:* This task must only build Python virtual sensors that stream JSON telemetry. Do not write production hardware firmware.
+- [ ] T015 [US1] Add per-device credential loading and server certificate validation boundaries to the Python virtual-sensor simulation in `device/src/security.py`. *Constraint:* This task must only build Python virtual sensors that stream JSON telemetry. Do not write production hardware firmware.
 - [ ] T016 [P] [US1] Add transport failure, retry, malformed payload, certificate, revoked credential, and cross-device credential fixtures in `tests/fixtures/telemetry/`.
 - [ ] T017 [US1] Add the Device-to-Edge validation runner and response-outcome checks in `tests/contract/test_device_telemetry.py`.
 
@@ -87,6 +87,7 @@ uptime and packet delivery, then verify integrity alert and diagnostic work item
 - [ ] T033 [P] Add contract compatibility and schema-version checks in `tests/contract/test_schema_compatibility.py`.
 - [ ] T034 Add traceable requirement-to-task references for FR-001 through FR-016 in `specs/003-edge-hardware-telemetry/traceability.md`.
 - [ ] T035 Run the latency, security, RAID, data-reduction, and closed-loop acceptance scenarios from `specs/003-edge-hardware-telemetry/quickstart.md` and record results in `tests/results/edge-hardware-telemetry.md`.
+- [ ] T036 Verify `CLAUDE.md` (system scope and agent roles), `spec.md` (inputs, outputs, and constraints), and `README.md` (how to run and understand) are fully aligned and structurally clear enough for another team to build, and record the SC-006 result in `tests/results/edge-hardware-telemetry.md`.
 
 ## Dependencies
 

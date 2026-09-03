@@ -7,11 +7,11 @@
 
 ## Summary
 
-Define a board-compatible Device transport that sends minimal JSON observations
-to an Edge boundary, where validation, feature extraction, inference, pruning,
-and Agentic AI OS decisions occur. The design uses Arduino-compatible Wi-Fi and
-HTTP transport conventions only at the Device boundary and preserves an auditable
-closed loop through validated commands and follow-up measurements.
+Define Python virtual sensors that send minimal JSON observations to an Edge
+boundary, where validation, feature extraction, inference, pruning, and Agentic
+AI OS decisions occur. The simulation preserves a transport-compatible Device
+contract and an auditable closed loop through validated commands and follow-up
+measurements.
 
 ## Technical Context
 
@@ -23,8 +23,8 @@ closed loop through validated commands and follow-up measurements.
 
 **Scope & Language Selection:** This project is strictly a simulation-only conceptual blueprint. We are not building production hardware firmware. The Device layer consists entirely of virtual sensors designed to output a mock data feed. Python is officially locked in as the implementation language for all simulated Edge intelligence (services/agents) and all testing frameworks.
 
-**Primary Dependencies**: `WiFi.h` or `ESP8266WiFi.h`, `HTTPClient`; HTTPS
-certificate validation and per-device credentials
+**Primary Dependencies**: Python virtual-sensor modules, HTTPS certificate
+validation, and per-device credentials
 
 **Storage**: Bounded Device buffer; durable Edge/Platform event and audit storage
   deferred to implementation
@@ -32,11 +32,11 @@ certificate validation and per-device credentials
 **Testing**: Deterministic JSON contract fixtures, transport-security fixtures,
   board or transport simulation, and closed-loop acceptance scenarios
 
-**Target Platform**: ESP32/ESP8266 Device, local Edge gateway, and conceptual
+**Target Platform**: Python virtual sensors, local Edge simulation, and conceptual
   mains-powered Platform/Application services
 
-**Project Type**: Multi-tier conceptual IoT blueprint with embedded transport
-  and Edge control-plane contracts
+**Project Type**: Multi-tier conceptual IoT blueprint with Python simulation
+  modules and Edge control-plane contracts
 
 **Performance Goals**: At least 95% of representative local Edge-to-Act actions
   complete in under 1 second from validated release to physical-state report
@@ -87,20 +87,21 @@ specs/003-edge-hardware-telemetry/
 -->
 
 ```text
-specs/003-edge-hardware-telemetry/
-├── plan.md
-├── research.md
-├── data-model.md
-├── quickstart.md
-└── contracts/
-  ├── telemetry.md
-  └── actuation-command.md
-
-future implementation paths (not created by this plan):
 device/
+└── src/
+    ├── network.py
+    ├── telemetry.py
+    └── security.py
 edge/
+├── agents/
+└── services/
 platform/
+└── api/
 tests/
+├── contract/
+├── integration/
+├── results/
+└── fixtures/
 ```
 
 **Structure Decision**: Keep this feature documentation self-contained under its

@@ -9,7 +9,7 @@ The architecture is divided into five core stages:
 2. **Edge Gateway** (Edge compute, local normalization, anomaly detection & local action loop)
 3. **Network & Transport Protocols** (LoRaWAN, 5G, Wi-Fi 6, MQTT/TLS 1.3, and Secure Brokerage)
 4. **Cloud Ingestion & Processing** (Cloud IoT Hub, Event Stream Processing, Microservices & AI Analytics)
-5. **Real-Time Intelligence Analytics & LLM Feed Boundary** (Time-series DB, Data Lake, Tiered storage, Real-Time Intelligence Engine → structured event metadata handoff to LLM)
+5. **Real-Time Intelligence Analytics & LLM Ingestion Engine (In Scope)** (Time-series DB, Data Lake, Tiered storage, Real-Time Intelligence Engine, and downstream LLM anomaly reasoning & tactical alerting)
 
 > **Scope Note:** This architecture document covers the full end-to-end pipeline across Stages 1–5: from physical sensor transduction, edge processing, and networking, through cloud ingestion, real-time intelligence enrichment, to the **in-scope** LLM Ingestion & Reasoning Engine where autonomous anomaly reasoning, threat triage, and tactical officer/responder alerting are actively executed.
 

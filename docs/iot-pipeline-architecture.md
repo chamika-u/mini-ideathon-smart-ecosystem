@@ -11,7 +11,7 @@ The architecture is divided into five core stages:
 4. **Cloud Ingestion & Processing** (Cloud IoT Hub, Event Stream Processing, Microservices & AI Analytics)
 5. **Real-Time Intelligence Analytics & LLM Feed Boundary** (Time-series DB, Data Lake, Tiered storage, Real-Time Intelligence Engine → structured event metadata handoff to LLM)
 
-> **Scope Note:** This document covers Stages 1–5 up to the point where structured event metadata is delivered to the LLM ingestion boundary. Downstream LLM orchestration, anomaly reasoning, and officer/soldier alerting decisions are owned and implemented by a separate team and are **out of scope** for this document.
+> **Scope Note:** This architecture document covers the full end-to-end pipeline across Stages 1–5: from physical sensor transduction, edge processing, and networking, through cloud ingestion, real-time intelligence enrichment, to the **in-scope** LLM Ingestion & Reasoning Engine where autonomous anomaly reasoning, threat triage, and tactical officer/responder alerting are actively executed.
 
 ---
 
@@ -61,7 +61,7 @@ flowchart LR
         ENRICH["Structured Event Metadata\n(context, severity, sensor correlation)"]
     end
 
-    LLM_FEED(["⬡ LLM Ingestion Boundary\n── Handoff Point ──\nOrchestrated Workflows →\nLLM Anomaly Reasoning\n(Out of Scope)"])
+    LLM_FEED(["⬡ LLM Ingestion & Reasoning Engine\n── In-Scope System Layer ──\nOrchestrated Workflows →\nLLM Anomaly Reasoning &\nTactical Responder Alerting\n(In Scope)"])
 
     CAM --> ING
     VIB --> ING

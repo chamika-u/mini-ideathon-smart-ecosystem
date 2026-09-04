@@ -9,7 +9,9 @@ The architecture is divided into five core stages:
 2. **Edge Gateway** (Edge compute, local normalization, anomaly detection & local action loop)
 3. **Network & Transport Protocols** (LoRaWAN, 5G, Wi-Fi 6, MQTT/TLS 1.3, and Secure Brokerage)
 4. **Cloud Ingestion & Processing** (Cloud IoT Hub, Event Stream Processing, Microservices & AI Analytics)
-5. **Data Warehousing & Reporting** (Time-series DB, Data Lake, Cold/Warm tiered storage & BI dashboards)
+5. **Real-Time Intelligence Analytics & LLM Feed Boundary** (Time-series DB, Data Lake, Tiered storage, Real-Time Intelligence Engine → structured event metadata handoff to LLM)
+
+> **Scope Note:** This document covers Stages 1–5 up to the point where structured event metadata is delivered to the LLM ingestion boundary. Downstream LLM orchestration, anomaly reasoning, and officer/soldier alerting decisions are owned and implemented by a separate team and are **out of scope** for this document.
 
 ---
 
@@ -31,7 +33,6 @@ flowchart LR
     end
 
     subgraph S2["2. Edge Gateway"]
-        ECN["Edge Compute Node"]
         ING["Data Ingestion & Normalization"]
         FEAT["Feature Derivation\n(Rolling Windows, FFT)"]
         INF["Local Inference & Safety Filter"]
@@ -52,12 +53,15 @@ flowchart LR
         AGENT["Agentic AI OS\n(Monitor->Reason->Validate)"]
     end
 
-    subgraph S5["5. Data Warehousing & Analytics"]
+    subgraph S5["5. Real-Time Intelligence Analytics"]
         TSDB["Time-Series DB\n(TimescaleDB / InfluxDB)"]
         LAKE["Data Lake\n(Parquet / Delta Lake)"]
         TIER["Cold / Warm Tiered Storage"]
-        BI["Analytical Reporting\n(Grafana / BI Dashboards)"]
+        RTAI["Real-Time Intelligence Engine\n(CEP + Enrichment + Event Metadata Builder)"]
+        ENRICH["Structured Event Metadata\n(context, severity, sensor correlation)"]
     end
+
+    LLM_FEED(["⬡ LLM Ingestion Boundary\n── Handoff Point ──\nOrchestrated Workflows →\nLLM Anomaly Reasoning\n(Out of Scope)"])
 
     CAM --> ING
     VIB --> ING
@@ -79,9 +83,15 @@ flowchart LR
     STREAM --> TSDB
     STREAM --> LAKE
 
-    TSDB --> BI
-    LAKE --> TIER
-    TIER --> BI
+    TSDB -->|Hot & warm metrics feed| RTAI
+    LAKE --> TIER -->|Historical context feed| RTAI
+    AGENT -->|Agentic observations| RTAI
+    RTAI --> ENRICH
+    ENRICH ==>|"Structured event metadata\ndelivered to LLM pipeline"| LLM_FEED
+
+    style LLM_FEED fill:#1a1a2e,stroke:#e94560,stroke-width:3px,color:#e94560
+    style RTAI fill:#0f3460,stroke:#00d4ff,stroke-width:2px,color:#00d4ff
+    style ENRICH fill:#0f3460,stroke:#a855f7,stroke-width:2px,color:#c4b5fd
 ```
 
 ---
@@ -198,37 +208,54 @@ The cloud layer scales elastically to handle millions of ingested events, execut
 
 ---
 
-### Stage 5: Data Warehousing & Analytics (Storage & Insights)
+### Stage 5: Real-Time Intelligence Analytics & LLM Feed Boundary
 
-Telemetry data transitions through tiered storage architectures according to access frequency and analytical latency requirements.
+Telemetry data transitions through tiered storage architectures based on latency and access patterns, then converges at the **Real-Time Intelligence Engine** which assembles structured event metadata and delivers it to the **LLM Ingestion Boundary** — the terminal handoff of this pipeline.
 
 ```mermaid
 graph TD
-    STREAM["Stream Ingestion (Kafka / Broker)"]
+    STREAM["Stream Ingestion\n(Kafka / Flink Broker)"]
 
-    subgraph HOT["Hot Path (< 50ms)"]
-        REDIS["In-Memory Cache (Redis)"]
-        LIVE["Real-time Ops Dashboards"]
+    subgraph HOT["Hot Path — < 50 ms"]
+        REDIS["In-Memory Cache\n(Redis / DragonFly)"]
+        LIVE["Live Operational State\n(Device Twins, Active Alerts)"]
     end
 
-    subgraph WARM["Warm Path (50ms - 2s)"]
+    subgraph WARM["Warm Path — 50 ms to 2 s"]
         TSDB["Time-Series Database\n(TimescaleDB / InfluxDB)"]
-        ANOMALY["Short-term Trend Analysis\n(Last 30-90 Days)"]
+        WINDOW["Sliding Window Aggregates\n(1-min, 5-min, 1-hr rollups)"]
     end
 
-    subgraph COLD["Cold Path (> 5s / Batch)"]
-        LAKE["Cloud Data Lake\n(AWS S3 / Azure ADLS / MinIO)"]
+    subgraph COLD["Cold Path — Batch / Archival"]
+        LAKE["Cloud Data Lake\n(S3 / Azure ADLS / MinIO)"]
         FORMAT["Columnar Storage\n(Apache Parquet / Delta Lake)"]
-        ML["AI/ML Retraining & Historical BI\n(Snowflake / Databricks / DuckDB)"]
+        HIST["Historical Context Store\n(Long-term patterns, training snapshots)"]
     end
+
+    subgraph RTAI["Real-Time Intelligence Engine"]
+        CEP["Complex Event Processing\n(Cross-sensor correlation, anomaly signals)"]
+        ENRICH["Context Enrichment\n(geo-context, device history, severity scoring)"]
+        PACK["Event Metadata Packager\n(structured payload builder)"]
+    end
+
+    LLM_FEED(["⬡ LLM Ingestion Boundary\n── Handoff Point ──\nStructured event metadata\ndelivered to LLM orchestration\n\nDownstream: anomaly reasoning,\nofficer / soldier alerting\n(Out of Scope — separate team)"])
 
     STREAM --> REDIS
     STREAM --> TSDB
     STREAM --> LAKE
 
-    REDIS --> LIVE
-    TSDB --> ANOMALY
-    LAKE --> FORMAT --> ML
+    REDIS --> LIVE --> CEP
+    TSDB --> WINDOW --> CEP
+    LAKE --> FORMAT --> HIST --> CEP
+
+    CEP --> ENRICH --> PACK
+    PACK ==>|"Structured Event Metadata Feed"| LLM_FEED
+
+    style LLM_FEED fill:#1a1a2e,stroke:#e94560,stroke-width:3px,color:#e94560
+    style PACK fill:#0f3460,stroke:#a855f7,stroke-width:2px,color:#c4b5fd
+    style CEP fill:#0f3460,stroke:#00d4ff,stroke-width:2px,color:#a5f3fc
+    style ENRICH fill:#0f3460,stroke:#00d4ff,stroke-width:2px,color:#a5f3fc
+    style RTAI fill:#0a192f,stroke:#00d4ff,stroke-dasharray: 6 3
 ```
 
 #### Tiered Storage Specifications
@@ -236,15 +263,51 @@ graph TD
 1. **Hot Path (Real-time State & Live Operation)**:
    - **Technology**: Redis / DragonFly in-memory key-value store.
    - **Retention**: 24 to 48 hours.
-   - **Use Case**: Device twin state caching, active alerts, sub-second operational monitoring.
-2. **Warm Path (Time-Series Querying & Trending)**:
+   - **Output to RTAI**: Live device-twin state, active alert flags, and real-time sensor pulse feeds streamed continuously into the Complex Event Processor.
+2. **Warm Path (Time-Series Querying & Rolling Analytics)**:
    - **Technology**: TimescaleDB (PostgreSQL hypertables) or InfluxDB.
-   - **Retention**: 90 days with continuous aggregate rollups (1-minute, 1-hour, 1-day averages).
-   - **Use Case**: Telemetry graphing, anomaly exploration, operator incident retrospectives.
-3. **Cold Path (Massive Data Lake & Long-Term Archival)**:
+   - **Retention**: 90 days with continuous aggregate rollups (1-minute, 5-minute, 1-hour, 1-day averages).
+   - **Output to RTAI**: Sliding-window aggregates and short-term trend signals used for cross-sensor correlation and anomaly scoring in the CEP layer.
+3. **Cold Path (Data Lake & Long-Term Archival)**:
    - **Technology**: Object Storage (S3 / Azure Data Lake / MinIO) storing compacted **Apache Parquet** or **Delta Lake** files partitioned by `year=YYYY/month=MM/day=DD/tenant_id=XYZ`.
    - **Retention**: 3 to 7+ years (regulatory compliance, seasonal pattern detection).
-   - **Use Case**: Training foundational agentic AI models, predictive failure modeling, enterprise business intelligence (PowerBI, Apache Superset).
+   - **Output to RTAI**: Historical context — baseline behavior profiles, long-term seasonal norms, and training data snapshots — provided to the Context Enrichment layer.
+
+#### Real-Time Intelligence Engine
+
+All three storage paths converge into the **Real-Time Intelligence Engine (RTAI)**, which is the architectural core of Stage 5:
+
+- **Complex Event Processing (CEP)**: Correlates signals across sensor types, time windows, and geographic zones in real-time to identify multi-dimensional patterns (e.g., sudden voltage spike + camera motion + vibration burst = potential equipment intrusion).
+- **Context Enrichment**: Augments raw anomaly signals with device history, geographic context, severity scoring, cluster risk levels, and relevant historical baselines.
+- **Event Metadata Packager**: Serializes the enriched event context into a structured payload schema — including `event_id`, `timestamp_ns`, `severity_score`, `sensor_cluster`, `correlated_signals[]`, `historical_baseline_delta`, and `geo_zone` — ready for LLM consumption.
+
+#### LLM Ingestion Boundary (Handoff Point)
+
+> **This is the terminal boundary of this pipeline.**
+
+The Event Metadata Packager delivers structured, enriched event payloads to the **LLM Ingestion Boundary** — a well-defined interface point where this IoT pipeline ends and the LLM Orchestration layer begins.
+
+The expected payload delivered at the boundary:
+
+```json
+{
+  "event_id": "evt-20260904-a7c2f91",
+  "timestamp_ns": 1788523059000000000,
+  "severity_score": 0.87,
+  "sensor_cluster": "zone-north-grid-04",
+  "geo_zone": "village-perimeter-north",
+  "correlated_signals": [
+    { "sensor": "cam-042",  "type": "motion_burst",     "value": "high",    "delta_from_baseline": 4.2 },
+    { "sensor": "pwr-017",  "type": "voltage_spike",    "value": 438.2,    "delta_from_baseline": 85.1 },
+    { "sensor": "vib-009",  "type": "vibration_rms",    "value": 12.4,     "delta_from_baseline": 9.8 }
+  ],
+  "historical_baseline_delta": "3-sigma above 90-day rolling average",
+  "context_summary": "Multi-sensor correlated anomaly detected in north perimeter zone. Pattern consistent with physical intrusion during low-light conditions.",
+  "pipeline_trace_id": "trace-ae-sss-0xf4a92b"
+}
+```
+
+**Downstream (out of scope):** The LLM orchestration layer, managed by a separate team, receives this payload and runs reasoning workflows to classify the event, consult historical training data, determine threat level, and decide whether to alert the nearest officer or army personnel.
 
 ---
 

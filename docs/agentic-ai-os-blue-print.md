@@ -1,3 +1,7 @@
+[← Back to Architecture Guide](../README.md) | [Problem Statement](problem_statement.README.md) | [IoT Pipeline Architecture](iot-pipeline-architecture.md) | [Security Architecture](security-architecture.md)
+
+---
+
 # Agentic AI OS Architecture Blueprint
 
 ## 1. Executive Summary
@@ -99,3 +103,8 @@ flowchart TD
 2. **Sub-Second Execution:** Local Edge-to-Act latency targets $<1\text{s}$ for 95% of events.
 3. **Data Minimization & Privacy:** Raw visual/audio streams never leave the local edge gateway; only pruned, encrypted delta metadata crosses the WAN boundary.
 4. **Resilience to Partitioning:** Edge agents function autonomously during upstream network outages, maintaining local safety operations.
+
+---
+
+[← Back to Architecture Guide](../README.md) | [Problem Statement](problem_statement.README.md) | [IoT Pipeline Architecture](iot-pipeline-architecture.md) | [Security Architecture](security-architecture.md)
+

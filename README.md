@@ -170,425 +170,160 @@ production C/C++ firmware.
 The full request and response behavior is defined in
 [contracts/telemetry.md](specs/003-edge-hardware-telemetry/contracts/telemetry.md).
 
-## 3. Software Architecture & Component Breakdown
+## 3. SOFTWARE ARCHITECTURE & COMPONENT BREAKDOWN
 
-### High-Level Architecture Pattern
+- **High-Level Architecture Pattern:**
+  The AE-SSS relies on an Edge-First, Event-Driven architecture. This design shifts the computational burden away from the cloud, placing the Agentic AI OS directly at the local gateway to process the continuous feedback loop: monitor $\rightarrow$ reason $\rightarrow$ validate $\rightarrow$ act $\rightarrow$ learn. By deciding locally, the system ensures ultra-low latency, preserves network bandwidth (using send-on-delta telemetry), and maintains operational autonomy during internet outages.  
 
-AE-SSS uses an **event-driven, contract-first, layered architecture**. The
-simulation has independently replaceable Device, Edge, Network, Platform, and
-Application responsibilities. It is not a deployed microservice system yet; the
-directory boundaries are the preparation for one.
+**ASCII Architecture Data Flow:**
 
 ```text
-													 +----------------------+
-													 | Application          |
-													 | operator view        |
-													 +----------+-----------+
-																			|
-												 validated command / alert
-																			v
-Device          Network             Platform
-sensor JSON --> transport --> governed metadata/alerts
-	 |                |                  |
-	 +--------------> Edge <-------------+
-										|
-			 +------------+-------------+
-			 | Monitor -> Planner       |
-			 |          -> Validator    |
-			 |          -> Action       |
-			 |               |           |
-			 |          physical effect |
-			 +---------------+-----------+
-											 |
-								 follow-up Sense
+[PHYSICAL ECOSYSTEM (Simulated)]
+      │
+      ▼
+[DEVICE TIER: VIRTUAL SENSORS]
+ (Generates JSON Telemetry: visual/acoustic mock data)
+      │
+      ▼
+[EDGE TIER: AGENTIC AI OS] 
+ ┌─────────────────────────────────────────────────────────┐
+ │ 1. MONITOR AGENT: Observe signals & detect thresholds   │
+ │ 2. PLANNER AGENT: Reason & plan (SDG data inputs)       │
+ │ 3. VALIDATOR AGENT: Check policy & cyber constraints    │
+ │ 4. ACTION AGENT: Execute alert / optimize               │
+ └─────────────┬───────────────────────────────────────────┘
+               │
+     (Send-on-Delta JSON Payload)
+               │
+      ▼        ▼ 
+[LOCAL ACTUATOR]  [PLATFORM / DASHBOARD]
+(PA/GPS Alert)    (Human-in-the-Loop Override / Analytics)
 ```
 
-Every boundary has a contract. The Edge is the first intelligence boundary; the
-Platform receives only pruned observations, assessments, alerts, and audit data.
+- **Core Component Deep-Dive:**
 
-### Core Component Deep-Dive
+  - **Device Layer (`device/src/virtual_sensors.py`)**
+    - *Purpose:* Mocks the physical ecosystem hardware (e.g., ESP32, IP cameras, microphones) by generating simulated physical quantities transduced into bits.
+    - *Tech Stack:* Python, standard JSON libraries.
+    - *Inputs/Outputs:* Takes configuration parameters (e.g., anomaly frequency) and outputs standard JSON telemetry payloads (timestamp, device ID, metric, value).
 
-#### Device virtual-sensor layer
+  - **Agent 1: Monitor Agent (`edge/agents/monitor_agent.py`)**
+    - *Purpose:* Configured to actively observe signals streaming from the virtual sensors, specifically searching to detect thresholds or patterns indicating multi-modal threats or silent hardware failures.
+    - *Tech Stack:* Python, local thresholding algorithms.
+    - *Inputs/Outputs:* Ingests raw JSON telemetry; outputs filtered anomaly events to the Planner.
 
-**Path:** `device/src/`
+  - **Agent 2: Planner Agent (`edge/agents/planner_agent.py`)**
+    - *Purpose:* Tasked to reason and plan based on the observed signals. It ingests SDG data and system constraints to classify the severity of the anomaly (e.g., Level 1 Civic vs. Level 3 Critical).
+    - *Tech Stack:* Python, LLM integration/Rule-based engines.
+    - *Inputs/Outputs:* Ingests anomaly events and SDG constraints; outputs classified threat profiles and proposed tactical responses.
 
-- **Purpose:** Model a low-energy field node that senses, identifies itself,
-	serializes an observation, and sends it toward Edge.
-- **Tech stack:** Python standard library; dataclasses, JSON, and mocked transport
-	facades retaining compatibility names such as `WiFi.localIP()` and `HTTPClient`.
-- **Inputs:** Device configuration, device credential, metric, value, unit, and
-	mock certificate fingerprint.
-- **Outputs:** Connection address, JSON telemetry payload, transport status, retry
-	state, and bounded buffered payloads.
+  - **Agent 3: Decision / Validator Agent (`edge/agents/validator_agent.py`)**
+    - *Purpose:* Acts as the system's immune system. It must strictly check policy and constraints before any execution. It enforces least-privilege access, verifies against an approved command set, and manages the mandatory Human-in-the-Loop (HITL) override/stop rule countdown.
+    - *Tech Stack:* Python, Policy-as-Code frameworks.
+    - *Inputs/Outputs:* Ingests proposed tactical responses; outputs digitally signed "Authorized Execution" tokens or halts the process.
 
-#### Network and Edge ingress
+  - **Agent 4: Action Agent (`edge/agents/action_agent.py`)**
+    - *Purpose:* Programmed to trigger alerts or optimizations that change the physical quantity. It routes the finalized GPS coordinates and dispatch payloads to local deterrents or remote officer terminals.
+    - *Tech Stack:* Python, simulated HTTP webhook dispatchers.
+    - *Inputs/Outputs:* Ingests authorized tokens; outputs physical actuator commands and feedback loop signals.
 
-**Paths:** `device/src/network.py`, `edge/services/telemetry_ingress.py`
+  - **Platform Dashboard (`platform/api/dashboard.py`)**
+    - *Purpose:* Provides the required human override / stop rule interface and fulfills the requirement to log and monitor agent actions for complete auditability.
+    - *Tech Stack:* Python (FastAPI/Flask).
+    - *Inputs/Outputs:* Ingests send-on-delta metadata and action logs; outputs system state visualizations and human override commands.
 
-- **Purpose:** Model authenticated submission and enforce the observation envelope
-	before Edge processing.
-- **Tech stack:** Python standard library and JSON parsing.
-- **Inputs:** JSON payload, content type, Device identity, credential result, and
-	certificate result.
-- **Outputs:** Accepted `DeviceObservation`, HTTP-like status result, or a rejection
-	reason for malformed, duplicate, out-of-order, or unauthorized input.
+## 4. NETWORKING & ROUTING
 
-#### Edge data model and schemas
+- **Network Topology:**
 
-**Paths:** `edge/models.py`, `edge/telemetry_schema.json`,
-`edge/actuation_command_schema.json`
+  The simulation models a highly decoupled local edge network. Virtual sensors and the Agentic AI OS live on a simulated local subnet, preventing raw data from traversing public networks. Only processed, validated metadata crosses the simulated WAN boundary to the Platform layer.
 
-- **Purpose:** Provide stable representations for observations, assessments,
-	commands, diagnostic work, and feedback records.
-- **Tech stack:** Python dataclasses and JSON Schema-shaped documents.
-- **Inputs:** Validated observations and proposed commands.
-- **Outputs:** Typed entities, schema validation rules, provenance links, and
-	command requirements.
+- **Ingress & Routing:**
+  
+  Virtual sensors push data to the Edge gateway via mocked HTTP POST requests or local message brokers (e.g., a lightweight local MQTT setup). The `Validator Agent` acts as the primary reverse proxy and security gatekeeper for any inbound external commands, enforcing least-privilege access strictly.
 
-#### Monitor Agent and health service
+- **Service-to-Service Communication:**
 
-**Paths:** `edge/agents/monitor.py`, `edge/services/health.py`
+  Internal agents communicate via Python-native event buses (in-memory simulation). Telemetry moving from the Edge to the Platform uses a strict "send-on-delta" REST API pattern. The JSON payloads require explicit `Content-Type: application/json` headers and include routing targets (e.g., `officer_id`) to ensure targeted dispatch.
 
-- **Purpose:** Detect thresholds, patterns, stale values, physical implausibility,
-	static readings, drift, and degraded sensor health.
-- **Tech stack:** Python standard library, history windows, statistics, and bounded
-	health scoring.
-- **Inputs:** `DeviceObservation`, expected range, SDG constraints, uptime, packet
-	sequence, and measurement history.
-- **Outputs:** `EdgeAssessment` with classification, confidence, health state,
-	feature summary, retention decision, and optional requested action.
+## 5. CODEBASE WALKTHROUGH TEMPLATE
 
-#### Planner Agent
-
-**Path:** `edge/agents/planner.py`
-
-- **Purpose:** Turn monitored evidence and constraints into a bounded proposal.
-- **Tech stack:** Python service boundary; model or rule integration is replaceable.
-- **Inputs:** Edge assessment and SDG/system constraints.
-- **Outputs:** Evidence-backed plan with requested action and `authorized: false`.
-	Planning never authorizes physical execution.
-
-#### Decision / Validator Agent
-
-**Paths:** `edge/agents/validator.py`, `edge/services/validator.py`
-
-- **Purpose:** Enforce policy before a physical action.
-- **Tech stack:** Python policy object, allowlisted command sets, expiry parsing,
-	stop-condition checks, and audit records.
-- **Inputs:** Proposed command, command-set identity, authorization result, expiry,
-	stop condition, and scope.
-- **Outputs:** Approval or rejection plus an audit entry. Rejected commands cannot
-	reach the Action Agent.
-
-#### Action Agent and feedback service
-
-**Paths:** `edge/agents/action.py`, `edge/services/feedback.py`
-
-- **Purpose:** Apply an approved simulated physical effect and close the loop.
-- **Tech stack:** Python state model and dataclass feedback record.
-- **Inputs:** Validator-approved command with target, scope, expiry, stop condition,
-	and audit reference.
-- **Outputs:** Physical-state report, duplicate-command protection, and a
-	`FeedbackRecord` linking intended effect to observed effect and learning approval.
-
-#### Reliability service
-
-**Path:** `edge/services/reliability.py`
-
-- **Purpose:** Provide bounded buffering and auditable recovery behavior during
-	transient transport loss.
-- **Tech stack:** Python `deque` with bounded capacity.
-- **Inputs:** Failed or pending payloads.
-- **Outputs:** FIFO replay candidates, buffer state, and buffering audit events.
-
-#### Diagnostic Coordinator
-
-**Path:** `edge/services/diagnostics.py`
-
-- **Purpose:** Coordinate proactive silent-failure investigation.
-- **Tech stack:** Python work-item coordinator with role audit records.
-- **Inputs:** Failure signal, device identity, hypothesis, measurement values, and
-	expected range.
-- **Outputs:** Researcher, Engineer, Tester, and Designer audit entries, read-only
-	diagnostic result, authorization state, and canonical dashboard alert payload.
-
-#### Platform alert contract
-
-**Path:** `platform/alerts/diagnostics.json`
-
-- **Purpose:** Define the platform-facing integrity alert shape.
-- **Tech stack:** JSON contract; no deployed alert broker is included.
-- **Inputs:** Device identity, degraded health, failure reason, and work-item ID.
-- **Outputs:** `hardware_integrity_alert` metadata suitable for a future dashboard.
-
-#### Frontend application
-
-No frontend application is implemented in this repository. The conceptual
-Application tier consumes validated assessments, alerts, audit records, and
-actuation outcomes. A future frontend must not issue a command directly to an
-actuator; it must submit an authorized request through the Validator contract and
-display uncertainty and degraded sensor state.
-
-#### Database and caching layers
-
-No production database or cache is implemented. The current simulation uses Python
-in-memory collections and bounded buffers. A future Platform design may introduce
-durable event/audit storage and an Edge-local cache, but it must define retention,
-eviction, replay, provenance, and failure semantics before implementation.
-
-## 4. Networking & Routing
-
-### Network Topology
-
-The repository models a private, local-first topology rather than provisioning a
-cloud VPC:
-
-```text
-			simulated Device network
-								|
-								v
-			 +----------------+
-			 | local Edge     |  first validation and intelligence boundary
-			 +--------+-------+
-								|
-			 authenticated summaries only
-								v
-			 +----------------+
-			 | private Network |
-			 +--------+-------+
-								v
-			 +----------------+       +------------------+
-			 | Platform       | ----> | Application      |
-			 | metadata/audit |       | operator surface |
-			 +----------------+       +------------------+
-```
-
-For a production deployment, Devices and Edge gateways belong in private network
-segments. Platform services should be isolated from public ingress, and only a
-dedicated Application/API boundary should be exposed externally. Raw sensor data
-must not be routed directly from Device to cloud services.
-
-### Ingress and Routing
-
-Current simulation ingress is `MockEdgeServer.receive()`:
-
-1. `VirtualSensor.send()` authenticates the Device credential.
-2. The virtual certificate validator checks the trusted server fingerprint.
-3. `VirtualHTTPClient.post()` requires `Content-Type: application/json`.
-4. `MockEdgeServer` checks the expected `device_id`.
-5. `TelemetryIngress.accept()` validates required fields, duplicate identity, and
-	 timestamp ordering.
-6. Accepted data becomes an Edge assessment; rejected data returns an explicit
-	 failure result and is never treated as accepted telemetry.
-
-There is no public API gateway, load balancer, reverse proxy, or production DNS in
-the repository. A future deployment must place TLS termination and authentication
-at a controlled ingress, route only to Edge or Platform endpoints, apply request
-limits, and preserve the Device identity through authenticated provenance.
-
-### Service-to-Service Communication
-
-The current implementation uses direct Python calls for deterministic testing.
-There are no Kafka topics, AMQP exchanges, gRPC services, or service-discovery
-registries. The logical routing table is:
-
-| Route | Current mechanism | Payload |
-|---|---|---|
-| Device -> Edge | Mock HTTP POST | JSON `DeviceObservation` |
-| Edge ingress -> Monitor | Python service call | Typed observation |
-| Monitor -> Planner | Python service call | `EdgeAssessment` |
-| Planner -> Validator | Command proposal | Unvalidated command |
-| Validator -> Action | Validated command | Allowlisted command with expiry and stop condition |
-| Action -> Monitor | Follow-up observation | Physical-state feedback |
-| Diagnostics -> Platform | Canonical JSON alert | Hardware-integrity metadata |
-
-If a broker is introduced later, routing keys must preserve at least
-`device_id`, `metric`, `schema_version`, and event type. The broker must not become
-the only path for required local Edge safety behavior.
-
-## 5. Codebase Walkthrough Template
-
-### Directory Structure
+- **Directory Structure:**
+  
+  To guarantee this repository is structurally clear enough for another team to build, the following layout is strictly enforced:  
 
 ```text
 mini-ideathon-smart-ecosystem/
-├── CLAUDE.md                         # System scope and agent roles
-├── README.md                         # This onboarding guide
-├── LICENSE
-├── .gitignore
-├── .specify/                         # Spec Kit workflows and project memory
-├── specs/
-│   ├── 001-five-tier-surveillance-loop/
-│   ├── 002-agentic-microgrid-team/
-│   └── 003-edge-hardware-telemetry/  # Active canonical feature
-│       ├── spec.md
-│       ├── plan.md
-│       ├── tasks.md
-│       ├── research.md
-│       ├── data-model.md
-│       ├── quickstart.md
-│       ├── traceability.md
-│       └── contracts/
-│           ├── telemetry.md
-│           └── actuation-command.md
-├── device/
+├── README.md                 # System overview and how to run
+├── CLAUDE.md                 # System scope + agent roles
+├── spec.md                   # Inputs, outputs + constraints
+├── device/                   
 │   └── src/
-│       ├── config.py                 # Virtual Device configuration
-│       ├── network.py                 # Virtual Wi-Fi and HTTP facades
-│       ├── security.py                # Credential and certificate mocks
-│       └── telemetry.py               # Observation serialization and retry
+│       ├── virtual_sensors.py# Mocks physical quantity transduction
+│       └── config.py         # Anomaly generation parameters
 ├── edge/
 │   ├── agents/
-│   │   ├── action.py
-│   │   ├── monitor.py
-│   │   ├── planner.py
-│   │   └── validator.py
-│   ├── services/
-│   │   ├── diagnostics.py
-│   │   ├── feedback.py
-│   │   ├── health.py
-│   │   ├── reliability.py
-│   │   ├── telemetry_ingress.py
-│   │   └── validator.py
-│   ├── actuation_command_schema.json
-│   ├── models.py
-│   └── telemetry_schema.json
+│   │   ├── monitor_agent.py  # Observes signals
+│   │   ├── planner_agent.py  # Reasons + plans
+│   │   ├── validator.py      # Checks policy + constraints
+│   │   └── action_agent.py   # Alerts / optimizes
+│   └── services/
+│       └── core_loop.py      # Executes the continuous feedback loop
 ├── platform/
-│   ├── __init__.py
-│   └── alerts/
-│       └── diagnostics.json
+│   └── api/
+│       └── dashboard.py      # Logs + monitors agent actions
 └── tests/
-		├── contract/
-		│   ├── test_device_telemetry.py
-		│   └── test_schema_compatibility.py
-		├── integration/
-		│   ├── test_agentic_loop.py
-		│   ├── test_device_recovery.py
-		│   └── test_silent_failure.py
-		├── fixtures/
-		│   ├── integrity/
-		│   └── telemetry/
-		└── results/
-				└── edge-hardware-telemetry.md
+    ├── contract/             # Validates JSON telemetry schemas
+    └── integration/          # Verifies closed-loop state changes
 ```
 
-### Code Component Explanation
+- **Code Component Explanation & Data Flow (The OS Loop):**
+  
+  The most critical file in this repository is `edge/services/core_loop.py`. It orchestrates the entire continuous feedback loop. The logic pattern enforces that the system cannot act without passing the validator's security boundaries, and every physical action must route back to the monitor to learn and close the loop.
 
-#### `/device`
-
-This directory represents the sensing boundary. Its mathematical responsibility
-is observation formation, not intelligence: a physical quantity $q$ becomes a
-timestamped value $x(t)$ with identity and health context. In the simulation,
-`VirtualSensor` produces that value and models transport. Do not add feature
-extraction, classification, pruning, or autonomous actuation here.
-
-#### `/edge`
-
-This is the intelligence and safety boundary. `TelemetryIngress` turns untrusted
-JSON into a typed observation. `MonitorAgent` derives a bounded assessment from
-history and constraints. `PlannerAgent` proposes; `ValidatorAgent` authorizes;
-`ActionAgent` changes simulated state; `feedback.py` records the result.
-
-The health logic deliberately separates transport health from physical health:
-
-```text
-transport healthy != measurement physically trustworthy
-```
-
-Static values, implausible ranges, stale readings, drift, and environmental
-context must be evaluated even when packet delivery and current draw appear normal.
-
-#### `/platform`
-
-This directory contains platform-facing contracts, currently the canonical
-hardware-integrity alert. It is the boundary for durable governance, audit,
-operator-facing alerts, and future external integrations. It must not become a
-shortcut around Edge validation or the command policy.
-
-#### `/tests`
-
-Tests are organized by contract and behavior rather than by implementation class:
-
-- `contract/` checks payload and schema boundaries.
-- `integration/` checks end-to-end feedback, recovery, latency, and silent failure.
-- `fixtures/` contains deterministic valid and negative inputs.
-- `results/` records the latest validation evidence without replacing executable
-	tests.
-
-### Critical File Pattern: Observation Through the Layers
-
-The following is a commented template, not a complete implementation:
+- **Critical File Pattern Template (`edge/services/core_loop.py`):**
 
 ```python
-def process_observation(raw_payload, device_context):
-		# Device: sense and serialize only. Do not infer or prune here.
-		observation = virtual_sensor.serialize(raw_payload, device_context)
+import time
+from edge.agents.monitor_agent import Monitor
+from edge.agents.planner_agent import Planner
+from edge.agents.validator import Validator
+from edge.agents.action_agent import Action
 
-		# Network: authenticate the source and deliver the JSON envelope.
-		receipt = edge_transport.post(observation, content_type="application/json")
-		if not receipt.accepted:
-				reliability.buffer_for_bounded_replay(observation, receipt.detail)
-				return receipt
+class AgenticOS:
+    def __init__(self):
+        # Initialize the autonomous agent team
+        self.monitor = Monitor()
+        self.planner = Planner()
+        self.validator = Validator()
+        self.action = Action()
 
-		# Edge: validate, deduplicate, order, and prune before intelligence.
-		typed_observation = telemetry_ingress.accept(observation)
-		assessment = monitor.assess(typed_observation, constraints)
+    def run_continuous_loop(self):
+        """
+        Executes the 5-stage feedback loop: 
+        monitor -> reason -> validate -> act -> learn
+        """
+        while True:
+            # 1. MONITOR: Observe signals & detect thresholds
+            raw_signals = self.monitor.observe_signals()
+            if raw_signals.anomaly_detected:
 
-		# Reason: propose a bounded action, never authorize it.
-		proposal = planner.plan(assessment, constraints)
+                # 2. REASON: Ingest SDG data + constraints to reason and plan
+                plan = self.planner.reason_and_plan(raw_signals)
 
-		# Validate: enforce identity, policy, allowlist, expiry, stop condition, and audit.
-		command = validator.approve_or_reject(proposal)
-		if not command.approved:
-				return command
+                # 3. VALIDATE: Check policy, constraints, and approved command set
+                is_safe = self.validator.check_policy_and_constraints(plan)
 
-		# Act: change the physical state and report what actually changed.
-		effect = action.execute(command)
+                if is_safe:
+                    # 4. ACT: Trigger alerts or optimizations
+                    result = self.action.execute_alert_or_optimize(plan)
 
-		# Learn: sense the effect, link it to the command, and update only by policy.
-		follow_up = virtual_sensor.measure_effect(effect)
-		return feedback.record(command, effect, follow_up, learning_approval=True)
+                    # 5. LEARN: Log and monitor agent actions, feed result back
+                    self.monitor.log_and_monitor_actions(result)
+
+            time.sleep(1) # Simulation tick
+
+if __name__ == "__main__":
+    os = AgenticOS()
+    os.run_continuous_loop()
 ```
-
-### First-Day Developer Workflow
-
-1. Read [CLAUDE.md](CLAUDE.md), then the active [spec.md](specs/003-edge-hardware-telemetry/spec.md),
-	 [plan.md](specs/003-edge-hardware-telemetry/plan.md), and contracts.
-2. Run the validation suite:
-
-	 ```text
-	 python3 -m unittest discover -s tests -p "test_*.py" -v
-	 ```
-
-3. Run syntax and JSON checks:
-
-	 ```text
-	 python3 -m compileall -q device edge platform tests
-	 python3 -c "import json; json.load(open('edge/telemetry_schema.json')); json.load(open('edge/actuation_command_schema.json')); json.load(open('platform/alerts/diagnostics.json'))"
-	 ```
-
-4. Use [quickstart.md](specs/003-edge-hardware-telemetry/quickstart.md) for
-	 scenario-by-scenario evidence.
-5. Keep the Device boundary virtual and minimal. Put inference, pruning, health
-	 reasoning, and safety policy in Edge services.
-6. For every consequential action, demonstrate validation, actuation, and a
-	 follow-up measurement.
-7. For every sensor-health claim, include a silent-failure fixture; uptime and
-	 packet continuity alone are not sufficient.
-
-### Delivery Guardrails
-
-- Do not commit credentials, certificates, private keys, or real endpoint secrets.
-- Do not connect this simulation to live surveillance, emergency, utility, GPS, or
-	EMS systems.
-- Do not move intelligence or pruning into `device/src/`.
-- Do not allow Planner output to call Action directly.
-- Do not treat a dashboard notification as proof of controllability.
-- Do not mark a sensor healthy solely from transport metrics.
-- Changes to telemetry or actuation contracts require compatibility notes, updated
-	fixtures, and updated traceability evidence.
-
-The repository is ready for another team to extend as a governed simulation. Any
-production implementation must first establish deployment-specific threat models,
-capacity tests, hardware qualification, privacy review, operational ownership,
-and regulatory authorization outside this conceptual blueprint.

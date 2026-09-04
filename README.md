@@ -125,6 +125,20 @@ No GPU cluster, physical gateway, camera, microphone, relay, GPS unit, EMS
 integration, or public network is provisioned by this repository. Those are
 future deployment concerns and must remain behind the same contracts.
 
+### Reference Engineering Specifications (Physical Deployment Blueprint)
+
+For physical real-world deployment (e.g., at Pettah Central Bus Stand), the architecture targets the following hardware tiers and engineering choices:
+
+| Engineering Tier | Technology Choice | Engineering Rationale |
+|---|---|---|
+| **Sensors** | Sony IMX415 CMOS + 4-Mic MEMS Array | 4K HDR low-light optical + TDOA beamforming audio |
+| **Edge Hardware** | NVIDIA Jetson Orin Nano (8GB) / NXP i.MX8M Plus | Fanless industrial, 40 TOPS INT8, PoE+ compatible |
+| **Model Acceleration** | TensorRT / ONNX Runtime INT8 | $<30\text{ ms}$ multi-modal inference within 15W envelope |
+| **Security Element** | Microchip ATECC608A / TPM 2.0 | Tamper-proof private key storage, mTLS 1.3 certificates |
+| **Privacy Buffer** | 10-minute Rolling FIFO RAM (AES-256-GCM) | Zero permanent storage; continuous key destruction |
+| **Transport** | MQTT over TLS 1.3 + Send-on-Delta JSON | $>99\%$ WAN bandwidth reduction vs. raw RTSP video |
+| **Safety Circuit** | External Hardware Watchdog (MAX6369) | Failsafe reboot on OS freeze; offline partition survivability |
+
 ### Minimum Simulation Specifications
 
 Because the current Device is virtual, minimum hardware requirements apply to the

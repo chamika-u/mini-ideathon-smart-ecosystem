@@ -17,7 +17,7 @@ Comprehensive specifications, real-world deployment problem statements, and deta
 | Document | Focus & Key Highlights |
 |---|---|
 | [**Problem Statement & Solution Overview**](docs/problem_statement.README.md) | Real-world deployment scenario at **Pettah Central Bus Stand (Colombo)**: legacy CCTV limitations, multi-modal threat detection, active vs. silent deterrence, 10-minute zero-access privacy buffer, and UN SDG alignment (SDGs 3, 8, 9, 11). |
-| [**End-to-End IoT Pipeline Architecture**](docs/iot-pipeline-architecture.md) | 5-stage enterprise IoT telemetry and command architecture: **1. Physical Sensors**, **2. Edge Gateway**, **3. Network & Transport Protocols** (LoRaWAN, 5G, Wi-Fi 6, MQTT/TLS 1.3), **4. Cloud Ingestion & Stream Processing**, and **5. Real-Time Intelligence Analytics & LLM Ingestion Boundary**. |
+| [**End-to-End IoT Pipeline Architecture**](docs/iot-pipeline-architecture.md) | 5-stage enterprise IoT telemetry and command architecture: **1. Physical Sensors**, **2. Edge Gateway**, **3. Network & Transport Protocols** (LoRaWAN, 5G, Wi-Fi 6, MQTT/TLS 1.3), **4. Cloud Ingestion & Stream Processing**, and **5. Real-Time Intelligence Analytics & LLM Ingestion & Reasoning Engine (In Scope)**. |
 | [**Security Architecture & Trust Boundaries**](docs/security-architecture.md) | Threat modeling across Perimeters A–C, mutual TLS (mTLS) with X.509 certificates, HMAC-SHA256 payload signing, ephemeral token lifecycles, and closed-loop safety guardrails. |
 | [**Agentic AI OS Blueprint**](docs/agentic-ai-os-blue-print.md) | Closed-loop edge intelligence blueprint covering the 5-stage feedback cycle (`Monitor -> Reason -> Validate -> Act -> Learn`), Policy-as-Code enforcement, and Human-in-the-Loop (HITL) safety. |
 

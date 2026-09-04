@@ -1,3 +1,7 @@
+[← Back to Architecture Guide](../README.md) | [IoT Pipeline Architecture](iot-pipeline-architecture.md) | [Agentic AI OS Blueprint](agentic-ai-os-blue-print.md) | [Security Architecture](security-architecture.md)
+
+---
+
 # Problem Statement & Solution Overview: AE-SSS Deployment at Pettah Bus Stand
 
 **Project Title:** Agentic Edge-AI Smart Surveillance & Response System (AE-SSS)  
@@ -16,11 +20,23 @@ Pettah Central Bus Stand is one of the most densely populated, high-footfall pub
 * **Civic Violations & Environmental Degradation:** Widespread littering, illegal dumping, and public spitting (*bulath wita*) degrade public hygiene and infrastructure.
 * **Victim Retaliation & Evidence Loss:** Lack of real-time pre-incident context means arguments leading up to a crime are rarely captured, leaving victims unprotected and law enforcement without forensic evidence.
 
+### Pettah Deployment Operational Profile & Constraints
+
+| Parameter | Operational Specification & Field Realities |
+|---|---|
+| **Daily Footfall** | ~250,000+ commuters, vendors, and tourists peak daily throughput |
+| **Transit Density** | ~1,500+ private and SLTB commuter buses operating continuously across long-distance and suburban bays |
+| **Acoustic Noise Floor** | 85–95 dBA ambient noise (engine rumble, horns, shouting) requiring directional mic arrays with beamforming noise cancellation |
+| **Linguistic Diversity** | Multi-lingual distress keyword NLP across **Sinhala** (*"උදව් කරන්න"*, *"සල්ලි දීපන්"*), **Tamil** (*"காப்பாற்றுங்கள்"*), and **Sri Lankan English** (*"Help"*) |
+| **Latency SLA** | $<50\text{ ms}$ local edge anomaly detection; $<1\text{ s}$ edge-to-act response |
+| **WAN Bandwidth Budget** | Send-on-Delta JSON metadata (<2 KB/event) vs. continuous 4K RTSP streams (15–25 Mbps/camera saved) |
+| **Privacy Mandate** | Zero permanent audio retention under nominal conditions; 10-minute encrypted FIFO RAM buffer with zero human access |
+
 ---
 
 ## 2. Disadvantages & Problems of Current Systems
 
-The current security setup at Pettah relies on traditional CCTV networks and manual security patrols (police/military/bus stand security). This legacy setup suffers from five critical vulnerabilities:
+The current security setup at Pettah relies on traditional CCTV networks and manual security patrols (police/military/bus stand security). This legacy setup suffers from four critical vulnerabilities:
 
 ### A. Manual Patrols & Passive Monitoring
 * **Human Fatigue & Blind Spots:** Stationing static guards or requiring officers to manually monitor dozens of CCTV screens leads to cognitive overload. Critical incidents are routinely missed in real time.
@@ -40,22 +56,63 @@ The current security setup at Pettah relies on traditional CCTV networks and man
 
 ## 3. Proposed Solution: AE-SSS (Agentic Edge-AI Smart Surveillance System)
 
-AE-SSS replaces passive recording with an **Agentic Edge-AI framework** that senses, reasons, validates, and acts directly at the camera node in real time.
+AE-SSS replaces passive recording with an **Agentic Edge-AI framework** that senses, reasons, validates, acts, and learns directly at the camera node in real time.
 
-[ Camera & Microphone Array @ Pettah ]
-│ (Multi-Modal Stream: Vision + Audio NLP)
-▼
-[ Edge Monitor Agent ] ──► Local Anomaly & Intent Detection (<50ms)
-│
-▼
-[ Risk Planner Agent ] ──► Severity Triage (Level 1 to Level 3)
-│
-▼
-[ Policy & Validator Agent ] ──► 30s Human-in-the-Loop Override Window
-│
-▼
-[ Tactical Action Agent ] ──► Context-Aware Multi-Channel Dispatch
+```mermaid
+flowchart TD
+    subgraph SENSING["1. Sensing Layer @ Pettah Bus Stand"]
+        CAM["Smart Optical Camera\n(YOLOv8 / ViT Vision Stream)"]
+        MIC["Directional Mic Array\n(Acoustic Beamforming & NLP)"]
+        RAM["10-Min Encrypted Rolling RAM Buffer\n(Zero Human Access / FIFO Overwrite)"]
+    end
 
+    subgraph EDGE_OS["2. Edge Agentic AI OS (Local Edge Node)"]
+        M["1. Edge Monitor Agent\n• Ingestion & Normalization\n• Visual & Acoustic Intent Detection\n• Sub-50ms Anomaly Detection"]
+        R["2. Risk Planner Agent\n• Threat Severity Triage (L1 - L3)\n• Context & Intent Classification\n• Tactical Action Proposal"]
+        V["3. Policy & Validator Agent\n• Least Privilege & Allowlist Policy\n• Cryptographic Token Issuance\n• 30s Human-in-the-Loop (HITL) Window"]
+        A["4. Tactical Action Agent\n• Context-Aware Multi-Channel Dispatch\n• Send-on-Delta JSON Dispatch"]
+        L["5. Learning & Closed-Loop Agent\n• Post-Action Transduction Audit\n• Deterrence Outcome Verification\n• Feedback to Monitor Baseline"]
+    end
+
+    subgraph ACTUATION["3. Tactical Dispatch & Field Actuation"]
+        SPEAKER["Level 1: Active Deterrence\nLocal PA Speaker Voice Alerts\n('Littering prohibited; logged')"]
+        POLICE["Level 3: Silent Command Dispatch\nField Patrol App (Encrypted GPS,\nClothing/Gait Re-ID Profiles)"]
+        EMS["Level 3: Automated EMS Escalation\n1990 Suwa Seriya Emergency API\n(Medical Collapse / Fall Detection)"]
+    end
+
+    subgraph CLOUD["4. Platform & LLM Reasoning Surface"]
+        CLOUD_FEED["Structured Event Metadata Feed\n(WAN Bandwidth Minimized)"]
+        LLM_OS["LLM Ingestion & Reasoning Engine\n(In Scope — Cross-Sensor Correlation & Reporting)"]
+    end
+
+    CAM --> M
+    MIC --> M
+    MIC -.->|"Transient Audio Stream"| RAM
+
+    M -->|"Anomaly Triggers"| R
+    R -->|"Proposed Action Plan"| V
+    V -->|"Authorized Execution Token"| A
+    
+    A -->|"Active Audio Prompts"| SPEAKER
+    A -->|"Silent Encrypted Alert"| POLICE
+    A -->|"Automated Emergency Brief"| EMS
+    A -->|"Send-on-Delta JSON"| CLOUD_FEED
+    
+    CLOUD_FEED --> LLM_OS
+
+    SPEAKER -.->|"Follow-up Observation"| L
+    POLICE -.->|"Responder Arrival Confirmation"| L
+    EMS -.->|"Medical Handoff Telemetry"| L
+    L -->|"Closed-Loop Verification Feedback"| M
+    
+    V -.->|"Lock Forensic Evidence"| RAM
+
+    style EDGE_OS fill:#0d1117,stroke:#58a6ff,stroke-width:2px,color:#c9d1d9
+    style SENSING fill:#161b22,stroke:#3fb950,stroke-width:2px,color:#c9d1d9
+    style ACTUATION fill:#161b22,stroke:#f85149,stroke-width:2px,color:#c9d1d9
+    style CLOUD fill:#161b22,stroke:#a371f7,stroke-width:2px,color:#c9d1d9
+    style LLM_OS fill:#1a1a2e,stroke:#10b981,stroke-width:2px,color:#34d399
+```
 
 ### Core Solution Features for Pettah
 
@@ -76,9 +133,26 @@ AE-SSS replaces passive recording with an **Agentic Edge-AI framework** that sen
 4. **Self-Diagnostics & Predictive Maintenance:**
    * Aligned with IEEE Day 2 principles, an internal **Health Monitor Agent** detects camera tampering, lens obstruction/blur, mic dead-lines, and system drift, automatically generating maintenance tickets before hardware failure occurs.
 
+5. **Closed-Loop Verification & Learning (Self-Healing Control):**
+   * Performs follow-up sensor transduction to verify whether an action produced the intended physical outcome (e.g., verifying noise level drop after a warning, or confirming responder arrival).
+   * Feeds empirical results back into the Monitor and Planner agents to continuously refine detection and threshold logic.
+
 ---
 
-## 4. SDG Alignment (Sustainable Development Goals)
+## 4. Architectural & Comparative Advantage
+
+| Evaluation Dimension | Legacy CCTV Networks | Centralized Cloud-Only AI | AE-SSS (Agentic Edge-AI) |
+|---|---|---|---|
+| **Response Latency** | Hours to days (post-incident forensic review) | 3 to 15 seconds (WAN round-trip dependency) | **< 1 second edge-to-act** (autonomous local loop) |
+| **WAN Bandwidth Usage** | Continuous 15–25 Mbps per camera stream | Continuous high-bandwidth video ingestion | **< 2 KB per event** (Send-on-Delta metadata only) |
+| **Offline Survivability** | Local storage only; zero response capability | Complete failure during network outage | **100% operational autonomy** during WAN partitions |
+| **Public Privacy** | Unbounded recording risks or blind visual monitoring | Central cloud storage of unvetted raw feeds | **10-min Zero-Access RAM Buffer**; zero permanent raw audio |
+| **Threat Contextualization** | None (blind passive recording) | Basic bounding-box motion detection | **Multi-modal Visual + Acoustic NLP triage (L1–L3)** |
+| **Tactical Action** | None (manual officer dispatch) | Generic broadcast push notification | **Context-aware:** Local voice deterrence vs. Silent tactical dispatch |
+
+---
+
+## 5. SDG Alignment (Sustainable Development Goals)
 
 AE-SSS directly advances four United Nations SDGs within urban transit environments:
 
@@ -98,8 +172,12 @@ AE-SSS directly advances four United Nations SDGs within urban transit environme
 
 ---
 
-## 5. Conclusion
+## 6. Conclusion
 
 The deployment of AE-SSS at the Pettah Central Bus Stand bridges the critical gap between passive sensing and real-time intervention. By shifting intelligence to the edge, AE-SSS eliminates bandwidth saturation, protects public privacy through a 10-minute rolling zero-access buffer, and ensures that critical medical and violent emergencies receive immediate, context-aware responses. 
 
 AE-SSS turns traditional, passive CCTV networks into an active, privacy-preserving, and life-saving guardian for Sri Lanka's public transit ecosystem.
+
+---
+
+[← Back to Architecture Guide](../README.md) | [IoT Pipeline Architecture](iot-pipeline-architecture.md) | [Agentic AI OS Blueprint](agentic-ai-os-blue-print.md) | [Security Architecture](security-architecture.md)1

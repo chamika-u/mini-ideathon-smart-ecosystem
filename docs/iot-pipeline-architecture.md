@@ -1,3 +1,7 @@
+[← Back to Architecture Guide](../README.md) | [Problem Statement](problem_statement.README.md) | [Agentic AI OS Blueprint](agentic-ai-os-blue-print.md) | [Security Architecture](security-architecture.md)
+
+---
+
 # End-to-End IoT Pipeline Architecture
 
 ## 1. Executive Summary
@@ -319,3 +323,8 @@ The expected payload delivered at the boundary:
    - When downstream cloud buffers saturate, Edge Gateways automatically drop low-priority ambient samples while preserving high-priority alarm and security event queues.
 3. **End-to-End Traceability**:
    - Every telemetry packet is assigned a distributed tracing ID (`trace_id`) propagated through Kafka headers, allowing complete auditing from the millisecond of physical sensor transduction to cold storage indexing.
+
+---
+
+[← Back to Architecture Guide](../README.md) | [Problem Statement](problem_statement.README.md) | [Agentic AI OS Blueprint](agentic-ai-os-blue-print.md) | [Security Architecture](security-architecture.md)
+

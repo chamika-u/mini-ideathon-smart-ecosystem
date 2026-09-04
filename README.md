@@ -8,6 +8,21 @@ Architectural Developer Onboarding Guide
 > The implementation uses Python virtual sensors to model field devices and a
 > local Edge control loop.
 
+---
+
+### 📚 Architecture & Problem Statement Documentation
+
+Comprehensive specifications, real-world deployment problem statements, and detailed architectural blueprints are documented in the [`docs/`](docs/) directory:
+
+| Document | Focus & Key Highlights |
+|---|---|
+| [**Problem Statement & Solution Overview**](docs/problem_statement.README.md) | Real-world deployment scenario at **Pettah Central Bus Stand (Colombo)**: legacy CCTV limitations, multi-modal threat detection, active vs. silent deterrence, 10-minute zero-access privacy buffer, and UN SDG alignment (SDGs 3, 8, 9, 11). |
+| [**End-to-End IoT Pipeline Architecture**](docs/iot-pipeline-architecture.md) | 5-stage enterprise IoT telemetry and command architecture: **1. Physical Sensors**, **2. Edge Gateway**, **3. Network & Transport Protocols** (LoRaWAN, 5G, Wi-Fi 6, MQTT/TLS 1.3), **4. Cloud Ingestion & Stream Processing**, and **5. Real-Time Intelligence Analytics & LLM Ingestion Boundary**. |
+| [**Security Architecture & Trust Boundaries**](docs/security-architecture.md) | Threat modeling across Perimeters A–C, mutual TLS (mTLS) with X.509 certificates, HMAC-SHA256 payload signing, ephemeral token lifecycles, and closed-loop safety guardrails. |
+| [**Agentic AI OS Blueprint**](docs/agentic-ai-os-blue-print.md) | Closed-loop edge intelligence blueprint covering the 5-stage feedback cycle (`Monitor -> Reason -> Validate -> Act -> Learn`), Policy-as-Code enforcement, and Human-in-the-Loop (HITL) safety. |
+
+---
+
 ## 1. System Overview & Purpose
 
 ### Core Purpose
@@ -46,6 +61,7 @@ Monitor -> Reason -> Validate -> Act -> Learn
 
 `CLAUDE.md` defines system scope and agent roles. The canonical detailed feature
 contract is [specs/003-edge-hardware-telemetry/spec.md](specs/003-edge-hardware-telemetry/spec.md).
+For the real-world deployment scenario, challenges, and UN SDG alignment at Pettah Central Bus Stand, see [docs/problem_statement.README.md](docs/problem_statement.README.md). For the autonomous decision cycle and agent boundaries, see [docs/agentic-ai-os-blue-print.md](docs/agentic-ai-os-blue-print.md).
 
 ### Key KPIs
 
@@ -81,6 +97,8 @@ this blueprint. They must be baselined during a future production design.
 ## 2. Hardware Architecture (Simulation Blueprint)
 
 ### Physical and Edge Infrastructure
+
+> *For the complete physical-to-cloud specification across all 5 architectural tiers, see [`docs/iot-pipeline-architecture.md`](docs/iot-pipeline-architecture.md). For device trust perimeters and cryptographic standards, see [`docs/security-architecture.md`](docs/security-architecture.md).*
 
 The repository models the following five-tier hierarchy:
 
@@ -174,6 +192,7 @@ The full request and response behavior is defined in
 
 - **High-Level Architecture Pattern:**
   The AE-SSS relies on an Edge-First, Event-Driven architecture. This design shifts the computational burden away from the cloud, placing the Agentic AI OS directly at the local gateway to process the continuous feedback loop: monitor $\rightarrow$ reason $\rightarrow$ validate $\rightarrow$ act $\rightarrow$ learn. By deciding locally, the system ensures ultra-low latency, preserves network bandwidth (using send-on-delta telemetry), and maintains operational autonomy during internet outages.  
+  *(For the complete agentic state transitions and contract definitions, refer to [`docs/agentic-ai-os-blue-print.md`](docs/agentic-ai-os-blue-print.md). For cloud ingestion, stream processing, and data warehousing, see [`docs/iot-pipeline-architecture.md`](docs/iot-pipeline-architecture.md).)*  
 
 **ASCII Architecture Data Flow:**
 
@@ -246,6 +265,8 @@ The full request and response behavior is defined in
 
   Internal agents communicate via Python-native event buses (in-memory simulation). Telemetry moving from the Edge to the Platform uses a strict "send-on-delta" REST API pattern. The JSON payloads require explicit `Content-Type: application/json` headers and include routing targets (e.g., `officer_id`) to ensure targeted dispatch.
 
+  *(For full transport protocol layers, MQTT/TLS 1.3 broker topology, and cryptographic trust boundaries, see [`docs/iot-pipeline-architecture.md`](docs/iot-pipeline-architecture.md) and [`docs/security-architecture.md`](docs/security-architecture.md).)*
+
 ## 5. CODEBASE WALKTHROUGH TEMPLATE
 
 - **Directory Structure:**
@@ -257,6 +278,11 @@ mini-ideathon-smart-ecosystem/
 ├── README.md                 # System overview and how to run
 ├── CLAUDE.md                 # System scope + agent roles
 ├── spec.md                   # Inputs, outputs + constraints
+├── docs/                     # Architectural documentation & problem statements
+│   ├── problem_statement.README.md  # Real-world Pettah deployment & problem analysis
+│   ├── iot-pipeline-architecture.md # End-to-end 5-stage IoT telemetry & cloud pipeline
+│   ├── security-architecture.md     # mTLS, zero-trust & cryptographic guardrails
+│   └── agentic-ai-os-blue-print.md  # 5-stage Agentic AI OS control loop blueprint
 ├── device/                   
 │   └── src/
 │       ├── virtual_sensors.py# Mocks physical quantity transduction

@@ -1,4 +1,4 @@
-Set-Content -Path "problem_statement.README.md" -Value '# Problem Statement & Solution Overview: AE-SSS Deployment at Pettah Bus Stand
+# Problem Statement & Solution Overview: AE-SSS Deployment at Pettah Bus Stand
 
 **Project Title:** Agentic Edge-AI Smart Surveillance & Response System (AE-SSS)  
 **Target Location:** Pettah Central Bus Stand, Colombo, Sri Lanka  
@@ -31,7 +31,7 @@ The current security setup at Pettah relies on traditional CCTV networks and man
 
 ### C. Lack of Contextual Severity Logic (Alert Fatigue)
 * Traditional automated motion-detection tools lack intent recognition. They trigger frequent false alarms for harmless crowd density while failing to differentiate between a minor verbal argument and a life-threatening knife attack.
-* Emitting loud local sirens during critical crimes alerts perpetrators prematurely, allowing them to flee into Pettah''s crowded lanes before law enforcement arrives.
+* Emitting loud local sirens during critical crimes alerts perpetrators prematurely, allowing them to flee into Pettah's crowded lanes before law enforcement arrives.
 
 ### D. Privacy Violations & Legal Barriers
 * Constant audio recording creates severe legal eavesdropping concerns under local privacy laws. Conversely, recording *no audio* strips away critical spoken threat context (e.g., *"give me the money"*, *"help"*).
@@ -65,7 +65,7 @@ AE-SSS replaces passive recording with an **Agentic Edge-AI framework** that sen
 
 2. **Context-Aware Tactical Response (Silent vs. Active Dispatch):**
    * **Level 1 (Minor Violations - Littering/Spitting):** Triggers **Active Deterrence Mode** via local speakers (*"Littering is prohibited; footage logged"*).
-   * **Level 3 (Critical Crimes - Assaults/Robbery):** Triggers **Silent Command Mode**. Local alarms remain off to prevent suspect flight. Sends silent visual alerts, live target tracking coordinates, and gait/clothing Re-ID parameters to nearby patrol officers'' mobile apps.
+   * **Level 3 (Critical Crimes - Assaults/Robbery):** Triggers **Silent Command Mode**. Local alarms remain off to prevent suspect flight. Sends silent visual alerts, live target tracking coordinates, and gait/clothing Re-ID parameters to nearby patrol officers' mobile apps.
    * **Level 3 (Medical Emergencies - Fall Detection/Unconsciousness):** Executes **Automated Emergency Medical Escalation (EMS)** to automatically dispatch GPS location and situation briefs directly to 1990 Suwa Seriya / nearest medical units.
 
 3. **10-Minute Zero-Access Rolling Edge RAM Buffer (Privacy Guardrail):**
@@ -102,4 +102,4 @@ AE-SSS directly advances four United Nations SDGs within urban transit environme
 
 The deployment of AE-SSS at the Pettah Central Bus Stand bridges the critical gap between passive sensing and real-time intervention. By shifting intelligence to the edge, AE-SSS eliminates bandwidth saturation, protects public privacy through a 10-minute rolling zero-access buffer, and ensures that critical medical and violent emergencies receive immediate, context-aware responses. 
 
-AE-SSS turns traditional, passive CCTV networks into an active, privacy-preserving, and life-saving guardian for Sri Lanka''s public transit ecosystem.'
+AE-SSS turns traditional, passive CCTV networks into an active, privacy-preserving, and life-saving guardian for Sri Lanka's public transit ecosystem.

@@ -27,9 +27,7 @@ Comprehensive specifications, real-world deployment problem statements, and deta
 
 ### Core Purpose
 
-AE-SSS is an anchor architecture for turning a passive sensing environment into a
-governed, closed-loop ecosystem. The reference scenario is a village micro-grid,
-but the same contracts apply to energy, air, water, and safety observations.
+AE-SSS is an architectural blueprint for turning a passive sensing environment into an autonomous, governed, closed-loop ecosystem. Developed for the **IEEE CS R10 Summer School Mini Ideathon**, the primary real-world anchor deployment scenario is the **Pettah Central Bus Stand (Colombo)**—transforming high-density public transit safety from passive CCTV recording into an edge-computed, privacy-preserving, context-aware surveillance and emergency response system. The underlying agentic control loops and telemetry contracts seamlessly generalize across transit security, public safety, municipal air/water monitoring, and village micro-grids.
 
 The system solves four related problems:
 
@@ -83,7 +81,7 @@ this blueprint. They must be baselined during a future production design.
 
 ### Target Audience
 
-- **Municipal or village operators:** need an understandable view of conditions,
+- **Transit, municipal, or ecosystem operators:** need an understandable view of real-time conditions,
 	validated actions, alerts, and sensor health.
 - **Edge and platform engineers:** implement the tier contracts without moving
 	inference or pruning onto the energy-constrained Device boundary.

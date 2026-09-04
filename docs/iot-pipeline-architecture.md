@@ -208,9 +208,9 @@ The cloud layer scales elastically to handle millions of ingested events, execut
 
 ---
 
-### Stage 5: Real-Time Intelligence Analytics & LLM Feed Boundary
+### Stage 5: Real-Time Intelligence Analytics & LLM Ingestion Engine
 
-Telemetry data transitions through tiered storage architectures based on latency and access patterns, then converges at the **Real-Time Intelligence Engine** which assembles structured event metadata and delivers it to the **LLM Ingestion Boundary** — the terminal handoff of this pipeline.
+Telemetry data transitions through tiered storage architectures based on latency and access patterns, then converges at the **Real-Time Intelligence Engine** which assembles structured event metadata and feeds it directly into the **LLM Ingestion & Reasoning Engine** for contextual threat evaluation and tactical dispatch.
 
 ```mermaid
 graph TD
@@ -238,7 +238,7 @@ graph TD
         PACK["Event Metadata Packager\n(structured payload builder)"]
     end
 
-    LLM_FEED(["⬡ LLM Ingestion Boundary\n── Handoff Point ──\nStructured event metadata\ndelivered to LLM orchestration\n\nDownstream: anomaly reasoning,\nofficer / soldier alerting\n(Out of Scope — separate team)"])
+    LLM_FEED(["⬡ LLM Ingestion & Reasoning Engine\n── Core System Component ──\nStructured event metadata\ndelivered to LLM orchestration\n\nDownstream: anomaly reasoning,\nofficer / soldier alerting\n(In Scope — AE-SSS Core System)"])
 
     STREAM --> REDIS
     STREAM --> TSDB
@@ -251,7 +251,7 @@ graph TD
     CEP --> ENRICH --> PACK
     PACK ==>|"Structured Event Metadata Feed"| LLM_FEED
 
-    style LLM_FEED fill:#1a1a2e,stroke:#e94560,stroke-width:3px,color:#e94560
+    style LLM_FEED fill:#1a1a2e,stroke:#10b981,stroke-width:3px,color:#34d399
     style PACK fill:#0f3460,stroke:#a855f7,stroke-width:2px,color:#c4b5fd
     style CEP fill:#0f3460,stroke:#00d4ff,stroke-width:2px,color:#a5f3fc
     style ENRICH fill:#0f3460,stroke:#00d4ff,stroke-width:2px,color:#a5f3fc
@@ -281,11 +281,11 @@ All three storage paths converge into the **Real-Time Intelligence Engine (RTAI)
 - **Context Enrichment**: Augments raw anomaly signals with device history, geographic context, severity scoring, cluster risk levels, and relevant historical baselines.
 - **Event Metadata Packager**: Serializes the enriched event context into a structured payload schema — including `event_id`, `timestamp_ns`, `severity_score`, `sensor_cluster`, `correlated_signals[]`, `historical_baseline_delta`, and `geo_zone` — ready for LLM consumption.
 
-#### LLM Ingestion Boundary (Handoff Point)
+#### LLM Ingestion & Reasoning Engine (In Scope)
 
-> **This is the terminal boundary of this pipeline.**
+> **In-Scope Core Architectural Capability.**
 
-The Event Metadata Packager delivers structured, enriched event payloads to the **LLM Ingestion Boundary** — a well-defined interface point where this IoT pipeline ends and the LLM Orchestration layer begins.
+The Event Metadata Packager delivers structured, enriched event payloads directly into the **LLM Ingestion & Reasoning Engine** — an integral in-scope subsystem of AE-SSS where multi-sensor context triggers automated agentic reasoning, threat assessment, and tactical execution.
 
 The expected payload delivered at the boundary:
 
@@ -307,7 +307,7 @@ The expected payload delivered at the boundary:
 }
 ```
 
-**Downstream (out of scope):** The LLM orchestration layer, managed by a separate team, receives this payload and runs reasoning workflows to classify the event, consult historical training data, determine threat level, and decide whether to alert the nearest officer or army personnel.
+**Downstream LLM Orchestration & Tactical Response (In Scope):** The integrated LLM orchestration and Agentic AI OS layer receives this payload to execute automated reasoning workflows: classifying threat severity (Level 1–3), comparing against historical incident patterns and policy constraints, and dispatching real-time notifications, tactical coordinates, or automated EMS escalations (e.g., 1990 Suwa Seriya) to field officers, transit security, and first responders.
 
 ---
 

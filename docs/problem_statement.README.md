@@ -122,7 +122,7 @@ flowchart TD
 
 2. **Context-Aware Tactical Response (Silent vs. Active Dispatch):**
    * **Level 1 (Minor Violations - Littering/Spitting):** Triggers **Active Deterrence Mode** via local speakers (*"Littering is prohibited; footage logged"*).
-   * **Level 3 (Critical Crimes - Assaults/Robbery):** Triggers **Silent Command Mode**. Local alarms remain off to prevent suspect flight. Sends silent visual alerts, live target tracking coordinates, and gait/clothing Re-ID parameters to nearby patrol officers' mobile apps.
+   * **Level 2 (Critical Crimes - Assaults/Robbery):** Triggers **Silent Command Mode**. Local alarms remain off to prevent suspect flight. Sends silent visual alerts, live target tracking coordinates, and gait/clothing Re-ID parameters to nearby patrol officers' mobile apps.
    * **Level 3 (Medical Emergencies - Fall Detection/Unconsciousness):** Executes **Automated Emergency Medical Escalation (EMS)** to automatically dispatch GPS location and situation briefs directly to 1990 Suwa Seriya / nearest medical units.
 
 3. **10-Minute Zero-Access Rolling Edge RAM Buffer (Privacy Guardrail):**

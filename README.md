@@ -1,16 +1,8 @@
 # Agentic Edge-AI Smart Surveillance System (AE-SSS)
 
-Architectural Developer Onboarding Guide
 
-> **Scope boundary:** AE-SSS is a simulation-only conceptual blueprint. This
-> repository does not contain production surveillance, hardware firmware, live
-> emergency integrations, or an authorization to operate in a public environment.
-> The implementation uses Python virtual sensors to model field devices and a
-> local Edge control loop.
 
----
-
-### 📚 Architecture & Problem Statement Documentation
+### Architecture & Problem Statement Documentation
 
 Comprehensive specifications, real-world deployment problem statements, and detailed architectural blueprints are documented in the [`docs/`](docs/) directory:
 
@@ -365,3 +357,13 @@ if __name__ == "__main__":
     os = AgenticOS()
     os.run_continuous_loop()
 ```
+
+Architectural Developer Onboarding Guide
+
+> **Scope boundary:** AE-SSS is a simulation-only conceptual blueprint. This
+> repository does not contain production surveillance, hardware firmware, live
+> emergency integrations, or an authorization to operate in a public environment.
+> The implementation uses Python virtual sensors to model field devices and a
+> local Edge control loop.
+
+---

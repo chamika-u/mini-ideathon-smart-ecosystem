@@ -365,3 +365,8 @@ if __name__ == "__main__":
     os = AgenticOS()
     os.run_continuous_loop()
 ```
+- **Team members**
+- @chamika-u
+- @Ravindulakshan2393
+- @amanda-ari
+- @romethdesilva
